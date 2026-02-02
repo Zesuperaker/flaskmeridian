@@ -16,63 +16,70 @@ pipx install git+https://github.com/Zesuperaker/flaskmeridian.git
 
 ## Usage
 
-### Create a new Flask project
+### Quick Start - Initialize in Current Directory (Recommended)
+
+```bash
+# Create and enter your project directory
+mkdir my_app
+cd my_app
+
+# Initialize FlaskMeridian project
+flaskmeridian init
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run your app
+python app.py
+```
+
+### With Authentication
+
+```bash
+mkdir my_app
+cd my_app
+
+# Initialize with Flask-Security-Too authentication
+flaskmeridian init --with-auth
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Update app.py secrets:
+# - Change SECRET_KEY
+# - Change SECURITY_PASSWORD_SALT
+
+# Run your app
+python app.py
+```
+
+### Alternative - Create with Subdirectory
 
 ```bash
 flaskmeridian create my_project
 cd my_project
-```
-
-This creates a project with directory structure and boilerplate code.
-
-### Add authentication (optional)
-
-```bash
-flaskmeridian auth
-```
-
-Or for PostgreSQL:
-
-```bash
-flaskmeridian auth --db-type=postgres
-```
-
-This adds:
-- User registration and login pages
-- Password hashing with passlib
-- User profile management
-- Role-based access control
-- Login tracking
-
-## Quick Start
-
-```bash
-# 1. Create project
-flaskmeridian create my_app
-cd my_app
-
-# 2. Add auth (optional)
-flaskmeridian auth
-
-# 3. Install dependencies
 pip install -r requirements.txt
-
-# 4. Update secrets in app.py
-# Change SECRET_KEY and SECURITY_PASSWORD_SALT
-
-# 5. Run
 python app.py
+```
 
-# 6. Visit http://localhost:5000
+Or with authentication:
+
+```bash
+flaskmeridian create my_project
+cd my_project
+flaskmeridian auth
+pip install -r requirements.txt
+python app.py
 ```
 
 ## Project Structure
 
 ```
-my_project/
+my_app/
 ├── templates/
 │   ├── base.html
-│   └── auth/           (if auth added)
+│   ├── index.html
+│   └── auth/                (if --with-auth used)
 │       ├── login.html
 │       ├── signup.html
 │       └── profile.html
@@ -80,14 +87,20 @@ my_project/
 │   ├── css/style.css
 │   └── js/script.js
 ├── routes/
+│   ├── __init__.py
 │   ├── main.py
-│   └── auth.py         (if auth added)
+│   └── auth.py             (if --with-auth used)
 ├── services/
-│   └── auth_service.py (if auth added)
+│   ├── __init__.py
+│   └── auth_service.py     (if --with-auth used)
 ├── db/
-│   ├── models.py
+│   ├── __init__.py
 │   ├── database.py
-│   └── __init__.py
+│   └── models/
+│       ├── __init__.py
+│       ├── base.py
+│       ├── user.py         (if --with-auth used)
+│       └── role.py         (if --with-auth used)
 ├── app.py
 └── requirements.txt
 ```
@@ -110,6 +123,55 @@ Check roles:
 ```python
 if current_user.has_role('admin'):
     # admin only code
+```
+
+Access user info:
+
+```python
+from flask_security import current_user
+
+@app.route('/profile')
+@auth_required()
+def profile():
+    return f'Hello {current_user.email}'
+```
+
+## Commands
+
+### `flaskmeridian init [OPTIONS]`
+
+Initialize a Flask project in the current directory.
+
+**Options:**
+- `--with-auth`: Include Flask-Security-Too authentication system
+
+**Usage:**
+```bash
+flaskmeridian init                 # Basic project
+flaskmeridian init --with-auth     # With authentication
+```
+
+### `flaskmeridian create PROJECT_NAME`
+
+Create a Flask project in a new subdirectory (legacy command).
+
+**Usage:**
+```bash
+flaskmeridian create my_project
+cd my_project
+```
+
+### `flaskmeridian auth`
+
+Add Flask-Security-Too authentication to an existing project created with `create`.
+
+**Options:**
+- `--db-type`: Database type - `sqlite` (default) or `postgres`
+
+**Usage:**
+```bash
+flaskmeridian auth                        # SQLite
+flaskmeridian auth --db-type=postgres     # PostgreSQL
 ```
 
 ## License

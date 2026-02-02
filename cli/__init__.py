@@ -2,7 +2,8 @@
 import click
 from flask import Blueprint
 from cli.commands.create import create
-from cli.commands.auth import auth  # ADD THIS
+from cli.commands.init import init
+from cli.commands.auth import auth
 
 
 @click.group()
@@ -12,7 +13,8 @@ def cli():
 
 
 cli.add_command(create)
-cli.add_command(auth)  # ADD THIS
+cli.add_command(init)
+cli.add_command(auth)
 
 
 if __name__ == '__main__':
