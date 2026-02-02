@@ -1,0 +1,4 @@
+click==8.3.1
+flask==3.1.2
+flask-sqlalchemy==3.1.1
+pip_licenses==5.5.1
