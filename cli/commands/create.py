@@ -8,6 +8,7 @@ from cli.templates import (
     routes_files,
     services_files,
     app_py,
+    requirements_files,
 )
 
 
@@ -50,6 +51,9 @@ def create(project_name):
         # Create services directory files
         services_files.create(project_path / 'services')
 
+        # Create requirements.txt
+        requirements_files.create(project_path)
+
         # Create main app file
         app_py.create(project_path, project_name)
 
@@ -73,10 +77,11 @@ def create(project_name):
         click.echo(f"  │   ├── __init__.py")
         click.echo(f"  │   ├── database.py")
         click.echo(f"  │   └── models.py")
+        click.echo(f"  ├── requirements.txt")
         click.echo(f"  └── app.py")
         click.echo(f"\n🚀 Get started:")
         click.echo(f"  cd {project_name}")
-        click.echo(f"  pip install flask flask-sqlalchemy")
+        click.echo(f"  pip install -r requirements.txt")
         click.echo(f"  python app.py")
 
     except Exception as e:
