@@ -1,17 +1,17 @@
-"""Auth routes generator - login, signup, logout, profile"""
+"""Auth routes generator - updated for new db/models structure"""
 import click
 from pathlib import Path
 
 
 def create(routes_path):
-    """Create auth.py with authentication routes"""
+    """Create auth.py with authentication routes using new model structure"""
 
     auth_routes_content = '''"""Authentication routes for Flask-Security-Too"""
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user
 from flask_security import auth_required, current_user
-from db import db
-from db.models import User
+from db.database import db
+from db.models import User, Role
 from services.auth_service import AuthService
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')

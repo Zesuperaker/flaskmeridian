@@ -1,21 +1,29 @@
-"""Database files generator"""
+"""Database files generator - refactored with models/ subdirectory"""
 import click
 
 
 def create(db_path):
-    """Create database-related files"""
+    """Create database-related files with organized structure"""
 
-    # __init__.py
-    init_content = '''"""Database module for FlaskMeridian app"""
+    # Create models subdirectory
+    models_path = db_path / 'models'
+    models_path.mkdir(exist_ok=True)
+
+    # ========================
+    # db/__init__.py
+    # ========================
+    db_init_content = '''"""Database module for FlaskMeridian app"""
 from .database import db
-from .models import *
+from .models import BaseModel
 
-__all__ = ['db']
+__all__ = ['db', 'BaseModel']
 '''
     with open(db_path / '__init__.py', 'w', encoding='utf-8') as f:
-        f.write(init_content)
+        f.write(db_init_content)
 
-    # database.py
+    # ========================
+    # db/database.py
+    # ========================
     database_content = '''"""Database initialization and configuration"""
 from flask_sqlalchemy import SQLAlchemy
 
@@ -32,9 +40,22 @@ def init_db(app):
     with open(db_path / 'database.py', 'w', encoding='utf-8') as f:
         f.write(database_content)
 
-    # models.py
-    models_content = '''"""Database models for FlaskMeridian app"""
-from .database import db
+    # ========================
+    # db/models/__init__.py
+    # ========================
+    models_init_content = '''"""Database models for FlaskMeridian app"""
+from .base import BaseModel
+
+__all__ = ['BaseModel']
+'''
+    with open(models_path / '__init__.py', 'w', encoding='utf-8') as f:
+        f.write(models_init_content)
+
+    # ========================
+    # db/models/base.py
+    # ========================
+    base_model_content = '''"""Base model with common attributes"""
+from ..database import db
 
 
 class BaseModel(db.Model):
@@ -49,14 +70,13 @@ class BaseModel(db.Model):
         onupdate=db.func.current_timestamp()
     )
 
-
-# Define your models here
-# Example:
-# class User(BaseModel):
-#     username = db.Column(db.String(80), unique=True, nullable=False)
-#     email = db.Column(db.String(120), unique=True, nullable=False)
+    def __repr__(self):
+        return f'<{self.__class__.__name__} {self.id}>'
 '''
-    with open(db_path / 'models.py', 'w', encoding='utf-8') as f:
-        f.write(models_content)
+    with open(models_path / 'base.py', 'w', encoding='utf-8') as f:
+        f.write(base_model_content)
 
-    click.echo("✅ Created db/__init__.py, db/database.py, db/models.py")
+    click.echo("✅ Created db/database.py")
+    click.echo("✅ Created db/models/")
+    click.echo("✅ Created db/models/base.py")
+    click.echo("✅ Created db/__init__.py and db/models/__init__.py")
