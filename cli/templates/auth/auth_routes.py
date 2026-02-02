@@ -100,7 +100,7 @@ def login():
                 return redirect(url_for('auth.login'))
 
             # Login user using Flask-Login (via Flask-Security)
-            login_user(user, remember=remember)
+            login_user(user, remember=remember, fresh=True)
 
             # Track login
             AuthService.track_login(user, request.remote_addr)

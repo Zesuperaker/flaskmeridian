@@ -41,6 +41,7 @@ class Role(BaseModel):
     # db/models/user.py
     # ========================
     user_content = '''"""User model with Flask-Security-Too and Flask-Login integration"""
+import uuid
 from .base import BaseModel
 from ..database import db
 
@@ -69,7 +70,7 @@ class User(BaseModel):
         db.String(255), 
         unique=True, 
         nullable=False,
-        default=lambda: __import__('uuid').uuid4().hex
+        default=lambda: str(uuid.uuid4())
     )
 
     # User profile information
