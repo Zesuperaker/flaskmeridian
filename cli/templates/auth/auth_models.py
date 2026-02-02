@@ -8,8 +8,8 @@ def update_models(db_path):
 
     models_file = db_path / 'models.py'
 
-    new_models = '''
-# ============================================================================
+    # FIXED: Remove leading newline from triple-quoted string
+    new_models = '''# ============================================================================
 # AUTHENTICATION MODELS (Flask-Security-Too)
 # ============================================================================
 
@@ -42,7 +42,13 @@ class User(BaseModel):
 
     # Account status
     active = db.Column(db.Boolean(), default=True)
-    fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
+    # FIXED: Added lambda default for fs_uniquifier
+    fs_uniquifier = db.Column(
+        db.String(255), 
+        unique=True, 
+        nullable=False,
+        default=lambda: __import__('uuid').uuid4().hex
+    )
 
     # User metadata
     first_name = db.Column(db.String(100))
