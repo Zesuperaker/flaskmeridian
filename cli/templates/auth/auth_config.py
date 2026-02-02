@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def update_app(app_path, db_type):
-    """Update app.py to include Flask-Security-Too configuration"""
+    """Update app.py to include Flask-Security-Too configuration with password hashers"""
 
     with open(app_path, 'r', encoding='utf-8') as f:
         content = f.read()
@@ -20,10 +20,10 @@ def update_app(app_path, db_type):
     else:
         db_uri = "'sqlite:///app.db'"
 
-    # Updated app.py content with Flask-Security-Too (no manual LoginManager)
+    # Updated app.py content with Flask-Security-Too with password hasher config
     updated_content = f'''"""FlaskMeridian Application with Flask-Security-Too Authentication"""
 from flask import Flask
-from flask_security import Security, SQLAlchemyUserDatastore
+from flask_security import Security, SQLAlchemyUserDatastore, hash_password
 from db.database import init_db, db
 from db.models import User, Role
 from routes import register_blueprints
@@ -41,6 +41,10 @@ def create_app(config=None):
     # Flask-Security configuration
     app.config['SECRET_KEY'] = 'change-me-in-production'  # Use: secrets.token_urlsafe(32)
     app.config['SECURITY_PASSWORD_SALT'] = 'change-me-in-production'  # Use: secrets.token_urlsafe(32)
+    
+    # Password hashing configuration - using modern argon2
+    app.config['SECURITY_PASSWORD_SCHEMES'] = ['argon2']
+    app.config['SECURITY_DEPRECATED_PASSWORD_SCHEMES'] = []
 
     if config:
         app.config.update(config)
@@ -74,6 +78,7 @@ def make_shell_context():
         'User': User,
         'Role': Role,
         'AuthService': AuthService,
+        'hash_password': hash_password,
     }}
 
 
@@ -85,6 +90,7 @@ if __name__ == '__main__':
         f.write(updated_content)
 
     click.echo("✅ Updated app.py with Flask-Security-Too configuration")
+    click.echo("✅ Configured password hashing with argon2")
 
     if db_type == 'postgres':
         click.echo("⚠️  Remember to update DATABASE_URI in app.py with your PostgreSQL credentials")
