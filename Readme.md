@@ -1,16 +1,14 @@
 # FlaskMeridian
 
-A fast and efficient CLI tool for setting up and automating Flask applications.
+A fast and efficient CLI tool for setting up Flask applications with optional authentication.
 
 ## Installation
-
-Install FlaskMeridian directly from GitHub:
 
 ```bash
 pip install git+https://github.com/Zesuperaker/flaskmeridian.git
 ```
 
-Or if you prefer to use `pipx` for CLI tools:
+Or with pipx:
 
 ```bash
 pipx install git+https://github.com/Zesuperaker/flaskmeridian.git
@@ -22,85 +20,97 @@ pipx install git+https://github.com/Zesuperaker/flaskmeridian.git
 
 ```bash
 flaskmeridian create my_project
+cd my_project
 ```
 
-This creates a new Flask project with the following structure:
+This creates a project with directory structure and boilerplate code.
 
+### Add authentication (optional)
+
+```bash
+flaskmeridian auth
 ```
-my_project/
-├── templates/
-│   └── base.html          # Base HTML template with styling
-├── static/
-│   ├── css/
-│   │   └── style.css      # Main stylesheet with CSS variables
-│   └── js/
-│       └── script.js      # Main JavaScript file
-├── services/              # Business logic and reusable services
-├── routes/                # Application routes/blueprints
-│   ├── __init__.py
-│   └── main.py           # Example main routes
-├── db/                    # Database configuration and models
-│   ├── __init__.py
-│   ├── database.py       # SQLAlchemy initialization
-│   └── models.py         # Database models
-└── app.py                # Main application file
+
+Or for PostgreSQL:
+
+```bash
+flaskmeridian auth --db-type=postgres
+```
+
+This adds:
+- User registration and login pages
+- Password hashing with passlib
+- User profile management
+- Role-based access control
+- Login tracking
+
+## Quick Start
+
+```bash
+# 1. Create project
+flaskmeridian create my_app
+cd my_app
+
+# 2. Add auth (optional)
+flaskmeridian auth
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Update secrets in app.py
+# Change SECRET_KEY and SECURITY_PASSWORD_SALT
+
+# 5. Run
+python app.py
+
+# 6. Visit http://localhost:5000
 ```
 
 ## Project Structure
 
-### templates/
-Houses all Jinja2 HTML templates. The `base.html` provides a responsive base layout that can be extended by other templates and includes references to static CSS and JS files.
+```
+my_project/
+├── templates/
+│   ├── base.html
+│   └── auth/           (if auth added)
+│       ├── login.html
+│       ├── signup.html
+│       └── profile.html
+├── static/
+│   ├── css/style.css
+│   └── js/script.js
+├── routes/
+│   ├── main.py
+│   └── auth.py         (if auth added)
+├── services/
+│   └── auth_service.py (if auth added)
+├── db/
+│   ├── models.py
+│   ├── database.py
+│   └── __init__.py
+├── app.py
+└── requirements.txt
+```
 
-### static/
-Contains all static assets (CSS, JavaScript, images, etc.).
-- **css/** - Stylesheets with pre-defined CSS variables for theming
-- **js/** - JavaScript files for frontend functionality
+## Using Auth
 
-### routes/
-Contains Flask blueprints organized by feature/functionality. Each route file should define a blueprint and be registered in `__init__.py`.
+Protect routes:
 
-### services/
-Business logic, database queries, and reusable functions live here. Services are called by routes to keep the separation of concerns clean.
+```python
+from flask_security import auth_required
 
-### db/
-Database initialization, SQLAlchemy configuration, and model definitions. The `BaseModel` provides common fields (id, created_at, updated_at).
+@app.route('/dashboard')
+@auth_required()
+def dashboard():
+    return 'Protected page'
+```
 
-## Quick Start
+Check roles:
 
-1. Install FlaskMeridian:
-   ```bash
-   pip install git+https://github.com/Zesuperaker/flaskmeridian.git
-   ```
-
-2. Create a new project:
-   ```bash
-   flaskmeridian create my_project
-   ```
-
-3. Navigate to your project:
-   ```bash
-   cd my_project
-   ```
-
-4. Install dependencies:
-   ```bash
-   pip install flask flask-sqlalchemy
-   ```
-
-5. Update `app.py` with your configuration
-
-6. Define your models in `db/models.py`
-
-7. Create route blueprints in `routes/`
-
-8. Add styles to `static/css/style.css`
-
-9. Add scripts to `static/js/script.js`
-
-10. Run your app:
-    ```bash
-    python app.py
-    ```
+```python
+if current_user.has_role('admin'):
+    # admin only code
+```
 
 ## License
 
