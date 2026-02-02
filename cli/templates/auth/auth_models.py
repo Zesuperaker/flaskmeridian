@@ -40,7 +40,7 @@ class Role(BaseModel):
     # ========================
     # db/models/user.py
     # ========================
-    user_content = '''"""User model with Flask-Security-Too integration"""
+    user_content = '''"""User model with Flask-Security-Too and Flask-Login integration"""
 from .base import BaseModel
 from ..database import db
 
@@ -54,7 +54,7 @@ roles_users = db.Table(
 
 
 class User(BaseModel):
-    """User model with authentication and role support"""
+    """User model with Flask-Security-Too and Flask-Login integration"""
     __tablename__ = 'user'
 
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
@@ -96,6 +96,31 @@ class User(BaseModel):
     def __str__(self):
         return self.email
 
+    # ========================
+    # Flask-Login Required Properties
+    # ========================
+    @property
+    def is_active(self):
+        """Flask-Login requirement: check if account is active"""
+        return self.active
+
+    @property
+    def is_authenticated(self):
+        """Flask-Login requirement: user is authenticated if loaded from database"""
+        return True
+
+    @property
+    def is_anonymous(self):
+        """Flask-Login requirement: this is not an anonymous user"""
+        return False
+
+    def get_id(self):
+        """Flask-Login requirement: return user ID as string"""
+        return str(self.id)
+
+    # ========================
+    # User Methods
+    # ========================
     def has_role(self, role_name):
         """Check if user has a specific role"""
         return any(role.name == role_name for role in self.roles)
