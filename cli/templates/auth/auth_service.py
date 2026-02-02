@@ -1,20 +1,19 @@
-"""Auth service generator - business logic using Flask-Security-Too"""
+"""Auth service generator - business logic using Flask-Security-Too with argon2"""
 import click
 from pathlib import Path
 
 
 def create(services_path):
-    """Create auth_service.py using Flask-Security-Too's built-in functions"""
+    """Create auth_service.py using Flask-Security-Too's argon2 functions"""
 
-    service_content = '''"""Authentication service - business logic using Flask-Security-Too"""
-from flask_security import hash_password
-from werkzeug.security import check_password_hash
+    service_content = '''"""Authentication service - business logic using Flask-Security-Too with argon2"""
+from flask_security import hash_password, verify_password
 from db import db
 from db.models import User, Role
 
 
 class AuthService:
-    """Service for handling authentication operations with Flask-Security-Too"""
+    """Service for handling authentication operations with argon2 hashing"""
 
     @staticmethod
     def create_user(email, username, password, first_name=None, last_name=None, roles=None):
@@ -24,7 +23,7 @@ class AuthService:
         Args:
             email: User's email address
             username: User's username
-            password: User's plaintext password (will be hashed)
+            password: User's plaintext password (will be hashed with argon2)
             first_name: Optional first name
             last_name: Optional last name
             roles: Optional list of role names to assign
@@ -42,7 +41,7 @@ class AuthService:
         if User.query.filter_by(username=username).first():
             raise ValueError(f"Username '{username}' is already taken")
 
-        # Hash password using Flask-Security's hash_password
+        # Hash password using Flask-Security (argon2)
         hashed_password = hash_password(password)
 
         # Create user
@@ -75,7 +74,7 @@ class AuthService:
     @staticmethod
     def verify_password(user, password):
         """
-        Verify user password
+        Verify user password using Flask-Security (argon2)
 
         Args:
             user: User instance
@@ -84,12 +83,12 @@ class AuthService:
         Returns:
             Boolean indicating if password is correct
         """
-        return check_password_hash(user.password, password)
+        return verify_password(password, user.password)
 
     @staticmethod
     def update_password(user, new_password):
         """
-        Update user password
+        Update user password with argon2 hashing
 
         Args:
             user: User instance
@@ -210,4 +209,4 @@ class AuthService:
     with open(service_file, 'w', encoding='utf-8') as f:
         f.write(service_content)
 
-    click.echo("✅ Created services/auth_service.py with authentication business logic")
+    click.echo("✅ Created services/auth_service.py with argon2 authentication")
