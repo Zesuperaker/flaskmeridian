@@ -38,7 +38,7 @@ app = create_app()
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
 '''
-    with open(project_path / 'app.py', 'w') as f:
+    with open(project_path / 'app.py', 'w', encoding='utf-8') as f:
         f.write(app_content)
 
     click.echo("✅ Created app.py")

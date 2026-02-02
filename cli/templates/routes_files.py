@@ -15,7 +15,7 @@ def register_blueprints(app):
     """Register all route blueprints"""
     app.register_blueprint(main_bp)
 '''
-    with open(routes_path / '__init__.py', 'w') as f:
+    with open(routes_path / '__init__.py', 'w', encoding='utf-8') as f:
         f.write(init_content)
 
     # main.py - renders index.html instead of index route that doesn't exist
@@ -36,7 +36,7 @@ def health():
     """Health check endpoint"""
     return {'status': 'healthy'}, 200
 '''
-    with open(routes_path / 'main.py', 'w') as f:
+    with open(routes_path / 'main.py', 'w', encoding='utf-8') as f:
         f.write(main_content)
 
     click.echo("✅ Created routes/__init__.py and routes/main.py")

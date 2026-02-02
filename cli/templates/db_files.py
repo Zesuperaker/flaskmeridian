@@ -12,7 +12,7 @@ from .models import *
 
 __all__ = ['db']
 '''
-    with open(db_path / '__init__.py', 'w') as f:
+    with open(db_path / '__init__.py', 'w', encoding='utf-8') as f:
         f.write(init_content)
 
     # database.py
@@ -29,7 +29,7 @@ def init_db(app):
     with app.app_context():
         db.create_all()
 '''
-    with open(db_path / 'database.py', 'w') as f:
+    with open(db_path / 'database.py', 'w', encoding='utf-8') as f:
         f.write(database_content)
 
     # models.py
@@ -56,7 +56,7 @@ class BaseModel(db.Model):
 #     username = db.Column(db.String(80), unique=True, nullable=False)
 #     email = db.Column(db.String(120), unique=True, nullable=False)
 '''
-    with open(db_path / 'models.py', 'w') as f:
+    with open(db_path / 'models.py', 'w', encoding='utf-8') as f:
         f.write(models_content)
 
     click.echo("✅ Created db/__init__.py, db/database.py, db/models.py")

@@ -11,7 +11,7 @@ def create(services_path):
 Services contain business logic and are reusable across routes.
 """
 '''
-    with open(services_path / '__init__.py', 'w') as f:
+    with open(services_path / '__init__.py', 'w', encoding='utf-8') as f:
         f.write(init_content)
 
     click.echo("✅ Created services/__init__.py")

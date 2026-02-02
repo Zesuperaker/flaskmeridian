@@ -29,7 +29,7 @@ body {
 
 /* Add your custom styles here */
 '''
-    with open(static_path / 'css' / 'style.css', 'w') as f:
+    with open(static_path / 'css' / 'style.css', 'w', encoding='utf-8') as f:
         f.write(css_content)
 
     # Create script.js
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add your scripts here
 });
 '''
-    with open(static_path / 'js' / 'script.js', 'w') as f:
+    with open(static_path / 'js' / 'script.js', 'w', encoding='utf-8') as f:
         f.write(js_content)
 
     click.echo("✅ Created static/css/style.css and static/js/script.js")

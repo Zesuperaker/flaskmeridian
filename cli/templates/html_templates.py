@@ -81,7 +81,7 @@ def create_base(templates_path):
 </body>
 </html>
 '''
-    with open(templates_path / 'base.html', 'w') as f:
+    with open(templates_path / 'base.html', 'w', encoding='utf-8') as f:
         f.write(base_html)
     click.echo("✅ Created templates/base.html")
 
@@ -110,6 +110,6 @@ def create_index(templates_path):
 <p><strong>Happy building! 🚀</strong></p>
 {% endblock %}
 '''
-    with open(templates_path / 'index.html', 'w') as f:
+    with open(templates_path / 'index.html', 'w', encoding='utf-8') as f:
         f.write(index_html)
     click.echo("✅ Created templates/index.html")
