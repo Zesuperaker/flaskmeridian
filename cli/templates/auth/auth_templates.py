@@ -1,15 +1,6 @@
 """Auth templates generator - HTML templates for Flask-Security-Too
 
-Flask-Security-Too Conventions:
-- Templates go in templates/security/ directory
-- Expected template names:
-  * login_user.html
-  * register_user.html
-  * forgot_password.html
-  * reset_password.html
-  * change_password.html
-- Endpoints: security.login, security.register, security.logout, etc.
-- Forms provided via Jinja2 context: login_user_form, register_form, etc.
+Creates templates in templates/security/ directory with proper Flask-Security integration.
 """
 import click
 from pathlib import Path
@@ -18,10 +9,13 @@ from pathlib import Path
 def create(templates_path):
     """Create security templates directory and pages for Flask-Security-Too
 
-    Note: Flask-Security-Too REQUIRES templates/security/ directory structure
+    Flask-Security-Too REQUIRES:
+    - Templates in templates/security/ directory
+    - Correct template names: login_user.html, register_user.html
+    - Use of Flask-Security form objects
     """
 
-    # Flask-Security-Too REQUIRES templates/security/ directory
+    # Create security directory (Flask-Security-Too REQUIRES this)
     security_dir = templates_path / 'security'
     security_dir.mkdir(exist_ok=True)
 
@@ -29,7 +23,6 @@ def create(templates_path):
     # login_user.html
     # ========================
     login_template = '''{% extends "base.html" %}
-{% from "security/macros.html" import render_form_without_hidden, render_field %}
 
 {% block title %}Sign In{% endblock %}
 {% block header_title %}Sign In to Your Account{% endblock %}
@@ -238,7 +231,6 @@ def create(templates_path):
     # register_user.html
     # ========================
     signup_template = '''{% extends "base.html" %}
-{% from "security/macros.html" import render_form_without_hidden, render_field %}
 
 {% block title %}Create Account{% endblock %}
 {% block header_title %}Create Your Account{% endblock %}
@@ -434,55 +426,13 @@ def create(templates_path):
 {% endblock %}
 '''
 
-    # ========================
-    # macros.html - Flask-Security macros
-    # ========================
-    macros_template = '''{% macro render_form_without_hidden(form, action=None) -%}
-<form method="POST"{% if action %} action="{{ action }}"{% endif %}>
-    {% for field in form %}
-        {% if field.widget.input_type != 'hidden' %}
-            {{ render_field(field) }}
-        {% else %}
-            {{ field() }}
-        {% endif %}
-    {% endfor %}
-</form>
-{%- endmacro %}
-
-{% macro render_field(field) -%}
-<div class="form-group">
-    {% if field.type != 'BooleanField' %}
-        {{ field.label }}
-    {% endif %}
-    {% if field.type == 'BooleanField' %}
-        <div class="checkbox">
-            {{ field() }}
-            {{ field.label }}
-        </div>
-    {% else %}
-        {{ field(class="form-control") }}
-    {% endif %}
-    {% if field.errors %}
-        <ul class="error-list">
-        {%- for error in field.errors %}
-            <li>{{ error }}</li>
-        {%- endfor %}
-        </ul>
-    {% endif %}
-</div>
-{%- endmacro %}
-'''
-
+    # Write files
     with open(security_dir / 'login_user.html', 'w', encoding='utf-8') as f:
         f.write(login_template)
 
     with open(security_dir / 'register_user.html', 'w', encoding='utf-8') as f:
         f.write(signup_template)
 
-    with open(security_dir / 'macros.html', 'w', encoding='utf-8') as f:
-        f.write(macros_template)
-
-    click.echo("✅ Created templates/security/ with Flask-Security-Too templates")
-    click.echo("   - login_user.html")
-    click.echo("   - register_user.html")
-    click.echo("   - macros.html")
+    click.echo("✅ Created templates/security/login_user.html")
+    click.echo("✅ Created templates/security/register_user.html")
+    click.echo("✅ Templates mapped to Flask-Security-Too routes")
