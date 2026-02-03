@@ -107,9 +107,10 @@ def init(with_auth):
         if with_auth:
             click.echo(f"\n🔧 Adding Flask-Security-Too authentication...\n")
 
-            # Import auth setup modules (no auth_routes - Flask-Security provides routes)
+            # Import auth setup modules
             from cli.templates.auth import (
                 auth_models,
+                auth_templates,
                 auth_config,
                 auth_requirements,
             )
@@ -117,8 +118,8 @@ def init(with_auth):
             # 1. Create User and Role models
             auth_models.update_models(cwd / 'db')
 
-            # 2. Update app.py with Flask-Security-Too configuration
-            # (already done above with create_with_auth)
+            # 2. Create auth HTML templates
+            auth_templates.create(cwd / 'templates')
 
             # 3. Update requirements.txt with Flask-Security-Too and argon2
             auth_requirements.update(cwd / 'requirements.txt')
@@ -137,6 +138,7 @@ def init(with_auth):
             click.echo(f"   ✓ Password reset functionality")
             click.echo(f"   ✓ CSRF protection")
             click.echo(f"   ✓ Automatic Flask-Login integration")
+            click.echo(f"   ✓ Auth templates (login, signup, profile)")
 
         click.echo(f"\n🚀 Get started:")
         click.echo(f"  1. Install dependencies:")
@@ -152,6 +154,7 @@ def init(with_auth):
             click.echo(f"     • Home:     http://localhost:5000")
             click.echo(f"     • Register: http://localhost:5000/register")
             click.echo(f"     • Login:    http://localhost:5000/login")
+            click.echo(f"     • Profile:  http://localhost:5000/profile")
         else:
             click.echo(f"\n  2. Run your app:")
             click.echo(f"     python app.py")

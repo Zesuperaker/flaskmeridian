@@ -17,6 +17,7 @@ def auth(db_type):
     Creates:
     - User and Role database models with RBAC
     - Flask-Security-Too configuration in app.py
+    - Auth HTML templates (login, signup, profile)
     - Built-in authentication routes (no custom code needed!)
 
     Built-in Routes (Flask-Security):
@@ -42,6 +43,7 @@ def auth(db_type):
         # Import auth setup modules (no auth_routes - Flask-Security provides everything)
         from cli.templates.auth import (
             auth_models,
+            auth_templates,
             auth_config,
             auth_requirements,
         )
@@ -49,10 +51,13 @@ def auth(db_type):
         # 1. Create User and Role models
         auth_models.update_models(Path('db'))
 
-        # 2. Update app.py with Flask-Security-Too configuration
+        # 2. Create auth HTML templates
+        auth_templates.create(Path('templates'))
+
+        # 3. Update app.py with Flask-Security-Too configuration
         auth_config.update_app(Path('app.py'), db_type)
 
-        # 3. Update requirements.txt with Flask-Security-Too and argon2
+        # 4. Update requirements.txt with Flask-Security-Too and argon2
         auth_requirements.update(Path('requirements.txt'))
 
         click.echo(f"\n{'=' * 60}")
@@ -61,6 +66,7 @@ def auth(db_type):
 
         click.echo("📋 What was created:")
         click.echo("  ✅ User and Role models (db/models/user.py, db/models/role.py)")
+        click.echo("  ✅ Auth templates (templates/auth/login.html, signup.html, profile.html)")
         click.echo("  ✅ Flask-Security configuration in app.py")
         click.echo("  ✅ Dependencies in requirements.txt")
 
@@ -108,6 +114,7 @@ def auth(db_type):
         click.echo(f"\n   5. Test authentication in browser:")
         click.echo(f"      • Register: http://localhost:5000/register")
         click.echo(f"      • Login:    http://localhost:5000/login")
+        click.echo(f"      • Profile:  http://localhost:5000/profile")
         click.echo(f"      • Logout:   http://localhost:5000/logout")
 
         click.echo(f"\n🛡️  Protecting Routes:")
