@@ -56,7 +56,7 @@ def create_with_auth(project_path, db_type='sqlite'):
     else:
         db_uri = "'sqlite:///app.db'"
 
-    app_content = f'''"""FlaskMeridian Application with Flask-Security-Too"""
+    app_content = f'''"""FlaskMeridian Application with Flask-Security-Too Authentication"""
 from flask import Flask
 from flask_security import Security, SQLAlchemyUserDatastore
 from db.database import db, init_db
@@ -82,7 +82,17 @@ def create_app(config=None):
     
     # Enable registration and password reset
     app.config['SECURITY_REGISTERABLE'] = True
-    app.config['SECURITY_RECOVERABLE'] = True
+    app.config['SECURITY_CONFIRMABLE'] = False  # Disable email confirmation (set to True in production)
+    app.config['SECURITY_RECOVERABLE'] = False   # Don't allow password reset
+
+    # Email configuration (optional for development since CONFIRMABLE=False)
+    # For production, uncomment and configure:
+    # app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    # app.config['MAIL_PORT'] = 587
+    # app.config['MAIL_USE_TLS'] = True
+    # app.config['MAIL_USERNAME'] = 'your-email@example.com'
+    # app.config['MAIL_PASSWORD'] = 'your-app-password'
+    # app.config['SECURITY_EMAIL_SENDER'] = 'your-email@example.com'
 
     if config:
         app.config.update(config)
@@ -95,8 +105,8 @@ def create_app(config=None):
     # - GET/POST /login
     # - GET/POST /register
     # - GET /logout
-    # - GET/POST /forgot-password
-    # - GET/POST /reset-password/<token>
+    # - GET/POST /forgot-password (if RECOVERABLE=True)
+    # - GET/POST /reset-password/<token> (if RECOVERABLE=True)
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     security = Security(app, user_datastore)
 

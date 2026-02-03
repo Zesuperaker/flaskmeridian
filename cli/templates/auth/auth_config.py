@@ -41,14 +41,14 @@ def create_app(config=None):
     app.config['SECRET_KEY'] = 'change-me-in-production'  # Use: python -c "import secrets; print(secrets.token_urlsafe(32))"
     app.config['SECURITY_PASSWORD_SALT'] = 'change-me-in-production'  # Use: python -c "import secrets; print(secrets.token_urlsafe(32))"
     
-    # Password hashing configuration - CRITICAL: use argon2
+    # Password hashing configuration - use argon2
     app.config['SECURITY_PASSWORD_SCHEMES'] = ['argon2']
     app.config['SECURITY_DEPRECATED_PASSWORD_SCHEMES'] = []
     
-    # Registration and account management
-    app.config['SECURITY_REGISTERABLE'] = True  # Allow user registration
+    # Enable registration and password reset
+    app.config['SECURITY_REGISTERABLE'] = True
     app.config['SECURITY_CONFIRMABLE'] = False  # Disable email confirmation (set to True in production)
-    app.config['SECURITY_RECOVERABLE'] = False   # Allow password reset
+    app.config['SECURITY_RECOVERABLE'] =  False  # Don't password reset
 
     # Email configuration (optional for development since CONFIRMABLE=False)
     # For production, uncomment and configure:
@@ -126,6 +126,7 @@ if __name__ == '__main__':
     click.echo("✅ Updated app.py with Flask-Security-Too argon2 configuration")
     click.echo("✅ Configured password hashing with argon2 (SECURITY_PASSWORD_SCHEMES)")
     click.echo("✅ Email confirmation DISABLED for development (SECURITY_CONFIRMABLE=False)")
+    click.echo("✅ Password reset ENABLED (SECURITY_RECOVERABLE=False)")
     click.echo("⚠️  For production, enable SECURITY_CONFIRMABLE=True and configure email settings")
 
     if db_type == 'postgres':
