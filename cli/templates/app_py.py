@@ -49,6 +49,8 @@ def create_with_auth(project_path, db_type='sqlite'):
 
     Uses Flask-Security's built-in routes instead of custom authentication routes:
     - /login, /register, /logout, /forgot-password, /reset-password/<token>
+
+    Email sending is disabled by default for development convenience.
     """
 
     if db_type == 'postgres':
@@ -80,19 +82,17 @@ def create_app(config=None):
     app.config['SECURITY_PASSWORD_SCHEMES'] = ['argon2']
     app.config['SECURITY_DEPRECATED_PASSWORD_SCHEMES'] = []
     
-    # Enable registration and password reset
+    # Enable registration
     app.config['SECURITY_REGISTERABLE'] = True
-    app.config['SECURITY_CONFIRMABLE'] = False  # Disable email confirmation (set to True in production)
-    app.config['SECURITY_RECOVERABLE'] = False   # Don't allow password reset
-
-    # Email configuration (optional for development since CONFIRMABLE=False)
-    # For production, uncomment and configure:
-    # app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-    # app.config['MAIL_PORT'] = 587
-    # app.config['MAIL_USE_TLS'] = True
-    # app.config['MAIL_USERNAME'] = 'your-email@example.com'
-    # app.config['MAIL_PASSWORD'] = 'your-app-password'
-    # app.config['SECURITY_EMAIL_SENDER'] = 'your-email@example.com'
+    app.config['SECURITY_CONFIRMABLE'] = False
+    app.config['SECURITY_RECOVERABLE'] = False
+    
+    # Disable email sending for development (no Flask-Mail needed!)
+    # Set to True in production if you have Flask-Mail configured
+    app.config['SECURITY_SEND_REGISTER_EMAIL'] = False
+    app.config['SECURITY_SEND_PASSWORD_CHANGE_EMAIL'] = False
+    app.config['SECURITY_SEND_PASSWORD_RESET_EMAIL'] = False
+    app.config['SECURITY_SEND_PASSWORD_RESET_NOTICE_EMAIL'] = False
 
     if config:
         app.config.update(config)
@@ -158,6 +158,8 @@ if __name__ == '__main__':
         f.write(app_content)
 
     click.echo("✅ Created app.py with Flask-Security-Too configuration")
+    click.echo("✅ Email sending DISABLED for development (no Flask-Mail needed!)")
+    click.echo("✅ Use SECURITY_SEND_*_EMAIL = True in production with Flask-Mail configured")
 
     if db_type == 'postgres':
         click.echo("⚠️  Remember to update SQLALCHEMY_DATABASE_URI in app.py with your PostgreSQL credentials")

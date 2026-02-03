@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def update_app(app_path, db_type):
-    """Update app.py to include Flask-Security-Too configuration with argon2"""
+    """Update app.py to include Flask-Security-Too configuration with email disabled for development"""
 
     with open(app_path, 'r', encoding='utf-8') as f:
         content = f.read()
@@ -20,7 +20,7 @@ def update_app(app_path, db_type):
     else:
         db_uri = "'sqlite:///app.db'"
 
-    # Updated app.py content with Flask-Security-Too with argon2 configuration
+    # Updated app.py content with Flask-Security-Too with SIMPLE EMAIL CONFIGURATION
     updated_content = f'''"""FlaskMeridian Application with Flask-Security-Too Authentication"""
 from flask import Flask
 from flask_security import Security, SQLAlchemyUserDatastore
@@ -45,19 +45,17 @@ def create_app(config=None):
     app.config['SECURITY_PASSWORD_SCHEMES'] = ['argon2']
     app.config['SECURITY_DEPRECATED_PASSWORD_SCHEMES'] = []
     
-    # Enable registration and password reset
+    # Enable registration
     app.config['SECURITY_REGISTERABLE'] = True
-    app.config['SECURITY_CONFIRMABLE'] = False  # Disable email confirmation (set to True in production)
-    app.config['SECURITY_RECOVERABLE'] =  False  # Don't password reset
-
-    # Email configuration (optional for development since CONFIRMABLE=False)
-    # For production, uncomment and configure:
-    # app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-    # app.config['MAIL_PORT'] = 587
-    # app.config['MAIL_USE_TLS'] = True
-    # app.config['MAIL_USERNAME'] = 'your-email@example.com'
-    # app.config['MAIL_PASSWORD'] = 'your-app-password'
-    # app.config['SECURITY_EMAIL_SENDER'] = 'your-email@example.com'
+    app.config['SECURITY_CONFIRMABLE'] = False
+    app.config['SECURITY_RECOVERABLE'] = False
+    
+    # Disable email sending for development (no Flask-Mail needed!)
+    # Set to True in production if you have Flask-Mail configured
+    app.config['SECURITY_SEND_REGISTER_EMAIL'] = False
+    app.config['SECURITY_SEND_PASSWORD_CHANGE_EMAIL'] = False
+    app.config['SECURITY_SEND_PASSWORD_RESET_EMAIL'] = False
+    app.config['SECURITY_SEND_PASSWORD_RESET_NOTICE_EMAIL'] = False
 
     if config:
         app.config.update(config)
@@ -124,10 +122,9 @@ if __name__ == '__main__':
         f.write(updated_content)
 
     click.echo("✅ Updated app.py with Flask-Security-Too argon2 configuration")
-    click.echo("✅ Configured password hashing with argon2 (SECURITY_PASSWORD_SCHEMES)")
-    click.echo("✅ Email confirmation DISABLED for development (SECURITY_CONFIRMABLE=False)")
-    click.echo("✅ Password reset ENABLED (SECURITY_RECOVERABLE=False)")
-    click.echo("⚠️  For production, enable SECURITY_CONFIRMABLE=True and configure email settings")
+    click.echo("✅ Email sending DISABLED with SECURITY_SEND_*_EMAIL = False")
+    click.echo("✅ No Flask-Mail needed for development!")
+    click.echo("⚠️  For production: install Flask-Mail and set SECURITY_SEND_*_EMAIL = True")
 
     if db_type == 'postgres':
         click.echo("⚠️  Remember to update SQLALCHEMY_DATABASE_URI in app.py with your PostgreSQL credentials")
