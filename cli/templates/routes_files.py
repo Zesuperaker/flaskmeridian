@@ -1,18 +1,38 @@
-"""Routes files generator"""
+"""Routes files generator - simplified for Flask-Security-Too"""
 import click
 
 
 def create(routes_path):
-    """Create routes directory files"""
+    """Create routes directory files - simplified for Flask-Security-Too
 
-    # __init__.py - FIXED to properly register blueprints
-    init_content = '''"""Routes module for FlaskMeridian app"""
-from flask import Blueprint
+    Note: Flask-Security-Too automatically registers authentication routes:
+    - /login, /register, /logout, /forgot-password, /reset-password/<token>
+
+    This function only creates the main app routes.
+    """
+
+    # __init__.py - simplified (no auth blueprint registration)
+    init_content = '''"""Routes module for FlaskMeridian app
+
+Flask-Security-Too automatically registers authentication routes:
+- GET/POST /login              - User login
+- GET/POST /register           - User registration
+- GET /logout                  - User logout
+- GET/POST /forgot-password    - Password reset request
+- GET/POST /reset-password/<token> - Password reset confirmation
+
+This file registers application-specific blueprints only.
+"""
 from .main import main_bp
 
 
 def register_blueprints(app):
-    """Register all route blueprints"""
+    """Register application blueprints
+    
+    Flask-Security-Too handles authentication routes automatically via the
+    Security() initialization in app.py. This function registers custom
+    application blueprints only.
+    """
     app.register_blueprint(main_bp)
 '''
     with open(routes_path / '__init__.py', 'w', encoding='utf-8') as f:

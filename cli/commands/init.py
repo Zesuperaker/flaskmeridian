@@ -1,7 +1,6 @@
 """Init command for generating new Flask projects in current directory"""
 import click
 from pathlib import Path
-import shutil
 from cli.templates import (
     html_templates,
     static_files,
@@ -75,8 +74,11 @@ def init(with_auth):
         # Create requirements.txt
         requirements_files.create(cwd)
 
-        # Create main app file
-        app_py.create(cwd, cwd.name)
+        # Create main app file (with or without auth)
+        if with_auth:
+            app_py.create_with_auth(cwd, 'sqlite')
+        else:
+            app_py.create(cwd, cwd.name)
 
         click.echo(f"\n{'=' * 60}")
         click.echo(f"✨ FlaskMeridian project initialized successfully!")
@@ -105,91 +107,61 @@ def init(with_auth):
         if with_auth:
             click.echo(f"\n🔧 Adding Flask-Security-Too authentication...\n")
 
-            # Import auth setup modules
+            # Import auth setup modules (no auth_routes - Flask-Security provides routes)
             from cli.templates.auth import (
                 auth_models,
-                auth_routes,
-                auth_service,
-                auth_templates,
                 auth_config,
                 auth_requirements,
             )
 
-            # 1. Update models
+            # 1. Create User and Role models
             auth_models.update_models(cwd / 'db')
 
-            # 2. Create auth routes
-            auth_routes.create(cwd / 'routes')
+            # 2. Update app.py with Flask-Security-Too configuration
+            # (already done above with create_with_auth)
 
-            # 3. Create auth service
-            auth_service.create(cwd / 'services')
-
-            # 4. Create auth templates
-            auth_templates.create(cwd / 'templates')
-
-            # 5. Update routes __init__.py
-            _update_routes_init_with_auth(cwd / 'routes')
-
-            # 6. Update app.py with Flask-Security-Too configuration
-            auth_config.update_app(cwd / 'app.py', 'sqlite')
-
-            # 7. Update requirements.txt
+            # 3. Update requirements.txt with Flask-Security-Too and argon2
             auth_requirements.update(cwd / 'requirements.txt')
 
-            click.echo(f"\n✨ Flask-Security-Too authentication added!")
+            click.echo(f"\n✨ Flask-Security-Too authentication configured!")
+            click.echo(f"\n🔐 Built-in Authentication Routes (Flask-Security):")
+            click.echo(f"   • /login              - User login")
+            click.echo(f"   • /register           - User registration")
+            click.echo(f"   • /logout             - User logout")
+            click.echo(f"   • /forgot-password    - Password reset request")
+            click.echo(f"   • /reset-password/<token> - Password reset confirmation")
             click.echo(f"\n🔒 Security Features Included:")
             click.echo(f"   ✓ User registration & login")
             click.echo(f"   ✓ Argon2 password hashing")
             click.echo(f"   ✓ Role-based access control (RBAC)")
-            click.echo(f"   ✓ User profile management")
-            click.echo(f"   ✓ Login tracking")
+            click.echo(f"   ✓ Password reset functionality")
+            click.echo(f"   ✓ CSRF protection")
+            click.echo(f"   ✓ Automatic Flask-Login integration")
 
         click.echo(f"\n🚀 Get started:")
         click.echo(f"  1. Install dependencies:")
         click.echo(f"     pip install -r requirements.txt")
 
         if with_auth:
-            click.echo(f"\n  2. Update secrets in app.py:")
+            click.echo(f"\n  2. Update secrets in app.py (IMPORTANT):")
             click.echo(f"     - Change SECRET_KEY")
             click.echo(f"     - Change SECURITY_PASSWORD_SALT")
-
-        click.echo(f"\n  3. Run your app:")
-        click.echo(f"     python app.py")
-
-        click.echo(f"\n  4. Visit http://localhost:5000")
+            click.echo(f"\n  3. Run your app:")
+            click.echo(f"     python app.py")
+            click.echo(f"\n  4. Visit in browser:")
+            click.echo(f"     • Home:     http://localhost:5000")
+            click.echo(f"     • Register: http://localhost:5000/register")
+            click.echo(f"     • Login:    http://localhost:5000/login")
+        else:
+            click.echo(f"\n  2. Run your app:")
+            click.echo(f"     python app.py")
+            click.echo(f"\n  3. Visit http://localhost:5000")
 
         click.echo(f"\n{'=' * 60}\n")
 
     except Exception as e:
         click.echo(f"❌ Error initializing project: {e}", err=True)
         raise
-
-
-def _update_routes_init_with_auth(routes_path):
-    """Update routes/__init__.py to register auth blueprint"""
-    init_file = routes_path / '__init__.py'
-
-    with open(init_file, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    if 'auth' in content.lower():
-        return
-
-    updated_content = '''"""Routes module for FlaskMeridian app"""
-from flask import Blueprint
-from .auth import auth_bp
-from .main import main_bp
-
-
-def register_blueprints(app):
-    """Register all route blueprints"""
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(main_bp)
-'''
-    with open(init_file, 'w', encoding='utf-8') as f:
-        f.write(updated_content)
-
-    click.echo("✅ Updated routes/__init__.py to register auth blueprint")
 
 
 if __name__ == '__main__':

@@ -1,9 +1,9 @@
-"""Main app.py generator - updated for new db/models structure"""
+"""Main app.py generator - with Flask-Security-Too configuration"""
 import click
 
 
 def create(project_path, project_name):
-    """Create main Flask app file with updated imports"""
+    """Create main Flask app file without authentication"""
 
     app_content = '''"""FlaskMeridian Application"""
 from flask import Flask
@@ -45,7 +45,11 @@ if __name__ == '__main__':
 
 
 def create_with_auth(project_path, db_type='sqlite'):
-    """Create app.py with Flask-Security-Too configuration"""
+    """Create app.py with Flask-Security-Too configuration
+
+    Uses Flask-Security's built-in routes instead of custom authentication routes:
+    - /login, /register, /logout, /forgot-password, /reset-password/<token>
+    """
 
     if db_type == 'postgres':
         db_uri = "'postgresql://user:password@localhost/flaskmeridian_db'"
@@ -58,7 +62,6 @@ from flask_security import Security, SQLAlchemyUserDatastore
 from db.database import db, init_db
 from db.models import User, Role
 from routes import register_blueprints
-from services.auth_service import AuthService
 
 
 def create_app(config=None):
@@ -70,8 +73,16 @@ def create_app(config=None):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Flask-Security configuration
-    app.config['SECRET_KEY'] = 'change-me-in-production'  # Use: secrets.token_urlsafe(32)
-    app.config['SECURITY_PASSWORD_SALT'] = 'change-me-in-production'  # Use: secrets.token_urlsafe(32)
+    app.config['SECRET_KEY'] = 'change-me-in-production'  # Use: python -c "import secrets; print(secrets.token_urlsafe(32))"
+    app.config['SECURITY_PASSWORD_SALT'] = 'change-me-in-production'  # Use: python -c "import secrets; print(secrets.token_urlsafe(32))"
+    
+    # Password hashing configuration - use argon2
+    app.config['SECURITY_PASSWORD_SCHEMES'] = ['argon2']
+    app.config['SECURITY_DEPRECATED_PASSWORD_SCHEMES'] = []
+    
+    # Enable registration and password reset
+    app.config['SECURITY_REGISTERABLE'] = True
+    app.config['SECURITY_RECOVERABLE'] = True
 
     if config:
         app.config.update(config)
@@ -79,18 +90,39 @@ def create_app(config=None):
     # Initialize database
     init_db(app)
 
-    # Setup Flask-Security (handles Flask-Login automatically)
+    # Setup Flask-Security (automatically registers all auth routes)
+    # Routes provided by Flask-Security:
+    # - GET/POST /login
+    # - GET/POST /register
+    # - GET /logout
+    # - GET/POST /forgot-password
+    # - GET/POST /reset-password/<token>
     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
     security = Security(app, user_datastore)
 
-    # Create default roles
+    # Initialize default roles
     with app.app_context():
-        AuthService.initialize_default_roles()
+        _initialize_default_roles()
 
-    # Register blueprints
+    # Register application blueprints
     register_blueprints(app)
 
     return app
+
+
+def _initialize_default_roles():
+    """Create default roles if they don't exist"""
+    default_roles = [
+        ('admin', 'Administrator - full system access'),
+        ('user', 'Regular user'),
+        ('moderator', 'Content moderator'),
+    ]
+
+    for name, description in default_roles:
+        if not Role.query.filter_by(name=name).first():
+            role = Role(name=name, description=description)
+            db.session.add(role)
+            db.session.commit()
 
 
 # Create app instance for Flask CLI
@@ -100,11 +132,12 @@ app = create_app()
 @app.shell_context_processor
 def make_shell_context():
     """Make database models available in flask shell"""
+    from flask_security import hash_password
     return {{
         'db': db,
         'User': User,
         'Role': Role,
-        'AuthService': AuthService,
+        'hash_password': hash_password,
     }}
 
 
@@ -117,4 +150,4 @@ if __name__ == '__main__':
     click.echo("✅ Created app.py with Flask-Security-Too configuration")
 
     if db_type == 'postgres':
-        click.echo("⚠️  Remember to update DATABASE_URI in app.py with your PostgreSQL credentials")
+        click.echo("⚠️  Remember to update SQLALCHEMY_DATABASE_URI in app.py with your PostgreSQL credentials")

@@ -16,10 +16,15 @@ def auth(db_type):
 
     Creates:
     - User and Role database models with RBAC
-    - Authentication routes (login, signup, logout, profile)
-    - Authentication service with business logic
-    - Professional HTML templates
-    - Flask-Security-Too configuration
+    - Flask-Security-Too configuration in app.py
+    - Built-in authentication routes (no custom code needed!)
+
+    Built-in Routes (Flask-Security):
+    - /login           - Login form & handler
+    - /register        - Registration form & handler
+    - /logout          - Logout handler
+    - /forgot-password - Password reset request
+    - /reset-password/<token> - Password reset confirmation
 
     Usage:
         flaskmeridian auth              # SQLite
@@ -34,120 +39,106 @@ def auth(db_type):
     try:
         click.echo("🔧 Setting up Flask-Security-Too authentication system...\n")
 
-        # Import all template generators
+        # Import auth setup modules (no auth_routes - Flask-Security provides everything)
         from cli.templates.auth import (
             auth_models,
-            auth_routes,
-            auth_service,
-            auth_templates,
             auth_config,
             auth_requirements,
         )
 
-        # 1. Update models
+        # 1. Create User and Role models
         auth_models.update_models(Path('db'))
 
-        # 2. Create auth routes
-        auth_routes.create(Path('routes'))
-
-        # 3. Create auth service
-        auth_service.create(Path('services'))
-
-        # 4. Create auth templates
-        auth_templates.create(Path('templates'))
-
-        # 5. Update routes __init__.py
-        _update_routes_init(Path('routes'))
-
-        # 6. Update app.py with Flask-Security-Too configuration
+        # 2. Update app.py with Flask-Security-Too configuration
         auth_config.update_app(Path('app.py'), db_type)
 
-        # 7. Update requirements.txt
+        # 3. Update requirements.txt with Flask-Security-Too and argon2
         auth_requirements.update(Path('requirements.txt'))
 
         click.echo(f"\n{'=' * 60}")
-        click.echo(f"✨ Authentication System Successfully Added!")
+        click.echo(f"✨ Flask-Security-Too Authentication Successfully Added!")
         click.echo(f"{'=' * 60}\n")
 
         click.echo("📋 What was created:")
-        click.echo("  ✅ User and Role models (db/models.py)")
-        click.echo("  ✅ Auth routes (routes/auth.py)")
-        click.echo("  ✅ Auth service (services/auth_service.py)")
-        click.echo("  ✅ Auth templates (templates/auth/)")
-        click.echo("  ✅ Flask-Security configuration (app.py)")
-        click.echo("  ✅ Dependencies (requirements.txt)")
+        click.echo("  ✅ User and Role models (db/models/user.py, db/models/role.py)")
+        click.echo("  ✅ Flask-Security configuration in app.py")
+        click.echo("  ✅ Dependencies in requirements.txt")
+
+        click.echo(f"\n🔐 Built-in Authentication Routes (provided by Flask-Security):")
+        click.echo("  • GET/POST /login            - User login page & handler")
+        click.echo("  • GET/POST /register         - User registration page & handler")
+        click.echo("  • GET /logout                - Logout handler")
+        click.echo("  • GET /forgot-password       - Password reset request")
+        click.echo("  • GET/POST /reset-password/<token> - Password reset form")
+
+        click.echo(f"\n🔒 Security Features Included:")
+        click.echo("  ✓ Argon2 password hashing (modern, secure)")
+        click.echo("  ✓ Password verification with Flask-Security")
+        click.echo("  ✓ Role-Based Access Control (RBAC)")
+        click.echo("  ✓ CSRF protection (automatic)")
+        click.echo("  ✓ Session management with remember-me")
+        click.echo("  ✓ Login tracking & rate limiting")
+        click.echo("  ✓ Account activation/deactivation")
+        click.echo("  ✓ Password reset functionality")
 
         click.echo(f"\n🔌 Database: {db_type.upper()}")
 
         if db_type == 'postgres':
             click.echo("\n⚠️  PostgreSQL Configuration Required:")
-            click.echo("   Update in app.py:")
+            click.echo("   Update DATABASE_URI in app.py:")
             click.echo("   app.config['SQLALCHEMY_DATABASE_URI'] = \\")
             click.echo("       'postgresql://user:password@localhost/dbname'")
 
-        click.echo(f"\n📦 Flask-Security-Too Includes:")
-        click.echo("   • Password hashing (via passlib)")
-        click.echo("   • Email validation (via email-validator)")
-        click.echo("   • Session management (via flask-login)")
-
-        click.echo(f"\n🚀 Next Steps:")
+        click.echo(f"\n📦 Next Steps:")
         click.echo(f"   1. Install dependencies:")
         click.echo(f"      pip install -r requirements.txt")
-        click.echo(f"\n   2. Update configuration in app.py:")
-        click.echo(f"      - Set SECRET_KEY")
-        click.echo(f"      - Set SECURITY_PASSWORD_SALT")
-        if db_type == 'postgres':
-            click.echo(f"      - Update database URI")
 
-        click.echo(f"\n   3. Start your app:")
+        click.echo(f"\n   2. Update secrets in app.py (CRITICAL for production):")
+        click.echo(f"      import secrets")
+        click.echo(f"      secrets.token_urlsafe(32)  # For SECRET_KEY")
+        click.echo(f"      secrets.token_urlsafe(32)  # For SECURITY_PASSWORD_SALT")
+
+        if db_type == 'postgres':
+            click.echo(f"\n   3. Update PostgreSQL connection string in app.py")
+
+        click.echo(f"\n   4. Delete old database and restart:")
+        click.echo(f"      rm app.db")
         click.echo(f"      python app.py")
 
-        click.echo(f"\n   4. Test authentication:")
-        click.echo(f"      • Signup:  http://localhost:5000/auth/signup")
-        click.echo(f"      • Login:   http://localhost:5000/auth/login")
-        click.echo(f"      • Profile: http://localhost:5000/auth/profile")
+        click.echo(f"\n   5. Test authentication in browser:")
+        click.echo(f"      • Register: http://localhost:5000/register")
+        click.echo(f"      • Login:    http://localhost:5000/login")
+        click.echo(f"      • Logout:   http://localhost:5000/logout")
 
-        click.echo(f"\n🔒 Security Features:")
-        click.echo(f"   ✓ Passlib password hashing (industry standard)")
-        click.echo(f"   ✓ Automatic email validation")
-        click.echo(f"   ✓ Session management with remember-me")
-        click.echo(f"   ✓ CSRF protection")
-        click.echo(f"   ✓ Role-based access control (RBAC)")
-        click.echo(f"   ✓ Login tracking")
-        click.echo(f"   ✓ Account activation/deactivation")
+        click.echo(f"\n🛡️  Protecting Routes:")
+        click.echo(f"")
+        click.echo(f"   from flask_security import auth_required, current_user")
+        click.echo(f"")
+        click.echo(f"   @app.route('/dashboard')")
+        click.echo(f"   @auth_required()")
+        click.echo(f"   def dashboard():")
+        click.echo(f"       return f'Welcome {{current_user.email}}!'")
+        click.echo(f"")
+        click.echo(f"   # Check roles:")
+        click.echo(f"   if current_user.has_role('admin'):")
+        click.echo(f"       # Admin only code")
+
+        click.echo(f"\n📚 Database Models:")
+        click.echo(f"   User model includes:")
+        click.echo(f"   - email, username, password (hashed with argon2)")
+        click.echo(f"   - first_name, last_name")
+        click.echo(f"   - active status")
+        click.echo(f"   - login tracking (login_count, last_login_at, etc.)")
+        click.echo(f"   - roles relationship (many-to-many with Role)")
+        click.echo(f"")
+        click.echo(f"   Role model includes:")
+        click.echo(f"   - name, description")
 
         click.echo(f"\n{'=' * 60}\n")
 
     except Exception as e:
         click.echo(f"❌ Error: {e}", err=True)
         raise
-
-
-def _update_routes_init(routes_path):
-    """Update routes/__init__.py to register auth blueprint"""
-    init_file = routes_path / '__init__.py'
-
-    with open(init_file, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    if 'auth' in content.lower():
-        return
-
-    updated_content = '''"""Routes module for FlaskMeridian app"""
-from flask import Blueprint
-from .auth import auth_bp
-from .main import main_bp
-
-
-def register_blueprints(app):
-    """Register all route blueprints"""
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(main_bp)
-'''
-    with open(init_file, 'w', encoding='utf-8') as f:
-        f.write(updated_content)
-
-    click.echo("✅ Updated routes/__init__.py to register auth blueprint")
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-"""Auth models generator - creates User and Role models in models/ subdirectory"""
+"""Auth models generator - creates User and Role models with Flask-Security integration"""
 import click
 from pathlib import Path
 
@@ -44,6 +44,7 @@ class Role(BaseModel):
 import uuid
 from .base import BaseModel
 from ..database import db
+from flask_security import verify_password
 
 
 # Association table for User-Role many-to-many relationship
@@ -120,6 +121,27 @@ class User(BaseModel):
         return str(self.id)
 
     # ========================
+    # Flask-Security-Too Required Methods
+    # ========================
+    def verify_and_update_password(self, password):
+        """
+        Flask-Security-Too REQUIRED: Verify password and update hash if needed
+        
+        This method is called by Flask-Security's LoginForm during authentication.
+        It verifies the provided password against the stored hash, and can update
+        the hash if the password hashing algorithm has changed.
+        
+        Args:
+            password: The plaintext password to verify
+            
+        Returns:
+            bool: True if password is correct, False otherwise
+        """
+        # Verify password using Flask-Security's verify_password
+        is_correct = verify_password(password, self.password)
+        return is_correct
+
+    # ========================
     # User Methods
     # ========================
     def has_role(self, role_name):
@@ -153,7 +175,7 @@ class User(BaseModel):
     _update_models_init(models_path)
 
     click.echo("✅ Created db/models/role.py")
-    click.echo("✅ Created db/models/user.py")
+    click.echo("✅ Created db/models/user.py with verify_and_update_password() method")
     click.echo("✅ Updated db/models/__init__.py")
 
 
