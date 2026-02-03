@@ -60,7 +60,7 @@ class User(BaseModel):
     __tablename__ = 'user'
 
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
-    username = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    username = db.Column(db.String(80), unique=True, nullable=True, index=True)
     password = db.Column(db.String(255), nullable=False)
 
     # Account status
