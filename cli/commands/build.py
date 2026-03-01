@@ -14,8 +14,13 @@ from cli.templates import (
 )
 
 
-def _setup_project_structure(project_path):
-    """Create all directories and files common to both auth and non-auth projects"""
+def _setup_project_structure(project_path, db_type='sqlite'):
+    """Create all directories and files common to both auth and non-auth projects
+
+    Args:
+        project_path: Path to project directory
+        db_type: Database type ('sqlite' or 'postgres')
+    """
 
     # Create main directories
     (project_path / 'templates').mkdir(exist_ok=True)
@@ -44,8 +49,8 @@ def _setup_project_structure(project_path):
     # Create services directory files
     services_files.create(project_path / 'services')
 
-    # Create requirements.txt
-    requirements_files.create(project_path)
+    # Create requirements.txt with appropriate database driver
+    requirements_files.create(project_path, db_type)
 
 
 def _setup_auth(project_path):
@@ -66,19 +71,19 @@ def _setup_auth(project_path):
     auth_requirements.update(project_path / 'requirements.txt')
 
 
-def _setup_config_files(project_path, with_auth=False):
+def _setup_config_files(project_path, with_auth=False, db_type='sqlite'):
     """Generate .env, .env.example, and .gitignore"""
     # Create .env with secure generated secrets
-    env_file.create(project_path)
+    env_file.create(project_path, db_type)
 
     # Create .env.example for documentation
-    env_file.create_sample(project_path)
+    env_file.create_sample(project_path, db_type)
 
     # Create .gitignore to protect secrets and common files
     gitignore_generator.create(project_path)
 
 
-def _print_success_message(project_path, with_auth):
+def _print_success_message(project_path, with_auth, db_type='sqlite'):
     """Print completion message with next steps"""
     click.echo(f"\n{'=' * 70}")
     click.echo(f"✨ FlaskMeridian project initialized successfully!")
@@ -105,11 +110,22 @@ def _print_success_message(project_path, with_auth):
     click.echo(f"     pip install -r requirements.txt")
     click.echo(f"")
 
+    if db_type == 'postgres':
+        click.echo(f"  2. Configure PostgreSQL connection in .env:")
+        click.echo(f"     DATABASE_URL=postgresql://user:password@localhost/flaskmeridian_db")
+        click.echo(f"")
+        click.echo(f"  3. Create the PostgreSQL database:")
+        click.echo(f"     createdb flaskmeridian_db")
+        click.echo(f"")
+        step_offset = 4
+    else:
+        step_offset = 3
+
     if with_auth:
-        click.echo(f"  3. Run your app:")
+        click.echo(f"  {step_offset}. Run your app:")
         click.echo(f"     python app.py")
         click.echo(f"")
-        click.echo(f"  4. Visit in browser:")
+        click.echo(f"  {step_offset + 1}. Visit in browser:")
         click.echo(f"     • Home:     http://localhost:5000")
         click.echo(f"     • Register: http://localhost:5000/register")
         click.echo(f"     • Login:    http://localhost:5000/login")
@@ -130,10 +146,10 @@ def _print_success_message(project_path, with_auth):
         click.echo(f"   ✓ Account activation/deactivation")
         click.echo(f"   ✓ Password reset functionality")
     else:
-        click.echo(f"  3. Run your app:")
+        click.echo(f"  {step_offset}. Run your app:")
         click.echo(f"     python app.py")
         click.echo(f"")
-        click.echo(f"  4. Visit http://localhost:5000")
+        click.echo(f"  {step_offset + 1}. Visit http://localhost:5000")
 
     click.echo(f"")
     click.echo(f"🔐 Security Notes:")
@@ -153,7 +169,8 @@ def build():
     """🚀 FlaskMeridian Build - Interactive project setup
 
     Answer a few quick questions to generate your Flask project with
-    optional authentication. Everything is set up and ready to go!
+    optional authentication and database choice. Everything is set up
+    and ready to go!
 
     Usage:
         flaskmeridian build
@@ -195,9 +212,24 @@ def build():
         click.echo(f"\n✅ Created project directory: {project_name}\n")
 
     # ========================
-    # Question 2: Authentication
+    # Question 2: Database Choice
     # ========================
-    click.echo("Question 2: Include Flask-Security-Too authentication?\n")
+    click.echo("Question 2: Which database would you like to use?\n")
+    click.echo("  1) SQLite (recommended for development)")
+    click.echo("  2) PostgreSQL (for production-grade apps)\n")
+
+    db_choice = click.prompt("Enter your choice", type=click.Choice(['1', '2']))
+    db_type = 'postgres' if db_choice == '2' else 'sqlite'
+
+    if db_type == 'postgres':
+        click.echo("\n✅ PostgreSQL selected - psycopg2-binary==2.9.11 will be added\n")
+    else:
+        click.echo("\n✅ SQLite selected - zero configuration needed\n")
+
+    # ========================
+    # Question 3: Authentication
+    # ========================
+    click.echo("Question 3: Include Flask-Security-Too authentication?\n")
     click.echo("  1) No (basic Flask)")
     click.echo("  2) Yes (with login, registration, RBAC)\n")
 
@@ -212,16 +244,16 @@ def build():
         click.echo("🔨 Building your FlaskMeridian project...\n")
 
         # 1. Create common project structure
-        _setup_project_structure(project_path)
+        _setup_project_structure(project_path, db_type)
 
         # 2. Create app.py (with or without auth)
         if with_auth:
-            app_py.create_with_auth(project_path, 'sqlite')
+            app_py.create_with_auth(project_path, db_type)
         else:
             app_py.create(project_path, project_path.name)
 
         # 3. Create config files (.env, .env.example, .gitignore)
-        _setup_config_files(project_path, with_auth)
+        _setup_config_files(project_path, with_auth, db_type)
 
         # 4. Add authentication if requested
         if with_auth:
@@ -229,7 +261,7 @@ def build():
             _setup_auth(project_path)
 
         # 5. Print success message
-        _print_success_message(project_path, with_auth)
+        _print_success_message(project_path, with_auth, db_type)
 
     except Exception as e:
         click.echo(f"\n❌ Error building project: {e}", err=True)

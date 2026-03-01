@@ -14,6 +14,13 @@ Or with pipx:
 pipx install git+https://github.com/Zesuperaker/flaskmeridian.git
 ```
 
+Uninstall with
+
+```bash
+pip uninstall flaskmeridian
+```
+
+
 ## Quick Start
 
 Simply run the interactive builder:
@@ -312,14 +319,3 @@ MIT - See LICENSE file
 ## Repository
 
 https://github.com/Zesuperaker/flaskmeridian
-
-## Changelog
-
-### v0.2.0 (Streamlined)
-- ✨ Consolidated to single `flaskmeridian build` command
-- 🎯 Interactive prompts for location and features
-- 📉 34% less code, more maintainable
-- 🚀 Better UX with guided workflow
-
-### v0.1.0 (Original)
-- Initial release with init, create, auth commands

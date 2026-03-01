@@ -1,14 +1,25 @@
-"""Environment configuration files generator - creates .env with secrets"""
+"""Environment configuration files generator - creates .env with secrets and db config"""
 import click
 import secrets
 
 
-def create(project_path):
-    """Create .env file with generated secrets for Flask-Security"""
+def create(project_path, db_type='sqlite'):
+    """Create .env file with generated secrets and database configuration
+
+    Args:
+        project_path: Path to project directory
+        db_type: Database type ('sqlite' or 'postgres')
+    """
 
     # Generate secure random secrets
     secret_key = secrets.token_urlsafe(32)
     password_salt = secrets.token_urlsafe(32)
+
+    # Set database URL based on type
+    if db_type == 'postgres':
+        database_url = 'postgresql://user:password@localhost/flaskmeridian_db'
+    else:
+        database_url = 'sqlite:///app.db'
 
     env_content = f'''# Flask-Security Configuration
 # IMPORTANT: Never commit this file! It's already in .gitignore
@@ -21,7 +32,7 @@ SECURITY_PASSWORD_SALT={password_salt}
 # Database
 # SQLite: sqlite:///app.db
 # PostgreSQL: postgresql://user:password@localhost/dbname
-DATABASE_URL=sqlite:///app.db
+DATABASE_URL={database_url}
 
 # Flask Environment
 FLASK_ENV=development
@@ -43,13 +54,31 @@ FLASK_DEBUG=True
     click.echo("✅ Created .env with secure generated secrets")
     click.echo(f"   📝 Key: {secret_key[:20]}...")
     click.echo(f"   📝 Salt: {password_salt[:20]}...")
+
+    if db_type == 'postgres':
+        click.echo(f"   🗄️  Database: PostgreSQL")
+        click.echo(f"   ⚠️  Update DATABASE_URL in .env with your credentials")
+    else:
+        click.echo(f"   🗄️  Database: SQLite (app.db)")
+
     click.echo("   ⚠️  .env is in .gitignore - never commit secrets!")
 
 
-def create_sample(project_path):
-    """Create .env.example file showing structure without real secrets"""
+def create_sample(project_path, db_type='sqlite'):
+    """Create .env.example file showing structure without real secrets
 
-    env_example = '''# Flask-Security Configuration (Example)
+    Args:
+        project_path: Path to project directory
+        db_type: Database type ('sqlite' or 'postgres')
+    """
+
+    # Set database URL based on type
+    if db_type == 'postgres':
+        database_url = 'postgresql://user:password@localhost/flaskmeridian_db'
+    else:
+        database_url = 'sqlite:///app.db'
+
+    env_example = f'''# Flask-Security Configuration (Example)
 # Copy this to .env and fill in your actual values
 # NEVER commit .env to version control!
 
@@ -59,7 +88,7 @@ SECURITY_PASSWORD_SALT=your-password-salt-here
 # Database
 # SQLite: sqlite:///app.db
 # PostgreSQL: postgresql://user:password@localhost/dbname
-DATABASE_URL=sqlite:///app.db
+DATABASE_URL={database_url}
 
 # Flask Environment
 FLASK_ENV=development
