@@ -49,7 +49,7 @@ def auth(db_type):
         )
 
         # Import environment and gitignore generators
-        from cli.templates import env_files, gitignore_generator
+        from cli.templates import env_file, gitignore_generator
 
         # 1. Create User and Role models
         auth_models.update_models(Path('db'))
@@ -63,14 +63,14 @@ def auth(db_type):
         # 4. Generate .env if it doesn't exist (preserve existing if present)
         env_file = Path('.env')
         if not env_file.exists():
-            env_files.create(Path.cwd())
+            env_file.create(Path.cwd())
         else:
             click.echo("ℹ️  .env already exists (preserving existing secrets)")
 
         # 5. Generate .env.example if it doesn't exist
         env_example = Path('.env.example')
         if not env_example.exists():
-            env_files.create_sample(Path.cwd())
+            env_file.create_sample(Path.cwd())
 
         # 6. Generate or update .gitignore
         if not Path('.gitignore').exists():
