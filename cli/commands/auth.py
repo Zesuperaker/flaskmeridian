@@ -61,16 +61,10 @@ def auth(db_type):
         auth_requirements.update(Path('requirements.txt'))
 
         # 4. Generate .env if it doesn't exist (preserve existing if present)
-        env_file = Path('.env')
-        if not env_file.exists():
-            env_file.create(Path.cwd())
-        else:
-            click.echo("ℹ️  .env already exists (preserving existing secrets)")
+        env_file.create(Path.cwd())
 
         # 5. Generate .env.example if it doesn't exist
-        env_example = Path('.env.example')
-        if not env_example.exists():
-            env_file.create_sample(Path.cwd())
+        env_file.create_sample(Path.cwd())
 
         # 6. Generate or update .gitignore
         if not Path('.gitignore').exists():
