@@ -82,11 +82,8 @@ services:
     build: .
     container_name: flaskmeridian_app
     ports:
-      - "5000:5000"
-    environment:
-      - FLASK_ENV=production
-      - FLASK_DEBUG=False
-      - DATABASE_URL=sqlite:///app.db
+      - "${FLASK_PORT:-5000}:5000"
+    env_file: .env
     volumes:
       - .:/app
       - ./instance:/app/instance
@@ -112,15 +109,15 @@ services:
     image: postgres:15-alpine
     container_name: flaskmeridian_db
     environment:
-      POSTGRES_USER: flaskuser
-      POSTGRES_PASSWORD: flaskpassword
-      POSTGRES_DB: flaskmeridian_db
+      POSTGRES_USER: ${DB_USER:-flaskuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-flaskpassword}
+      POSTGRES_DB: ${DB_NAME:-flaskmeridian_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U flaskuser"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-flaskuser}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -132,14 +129,11 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "5000:5000"
-    environment:
-      - FLASK_ENV=production
-      - FLASK_DEBUG=False
-      - DATABASE_URL=postgresql://flaskuser:flaskpassword@db:5432/flaskmeridian_db
+      - "${FLASK_PORT:-5000}:5000"
+    env_file: .env
     volumes:
       - .:/app
-    command: sh -c "flask db upgrade && gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 60 app:app"
+    command: gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 60 --access-logfile - --error-logfile - app:app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
@@ -150,6 +144,25 @@ services:
 volumes:
   postgres_data:
     driver: local
+'''
+
+    # ========================
+    # docker-compose.override.yml for development
+    # ========================
+    docker_compose_override = '''# Docker Compose Override for Development
+# This file is automatically used by docker-compose when present
+# It overrides settings in docker-compose.yml for local development
+
+version: '3.9'
+
+services:
+  app:
+    # Development settings override production
+    environment:
+      FLASK_DEBUG: "True"  # Enable debug mode for auto-reload
+    command: flask run --host=0.0.0.0
+    stdin_open: true
+    tty: true
 '''
 
     # ========================
