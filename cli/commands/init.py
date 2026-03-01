@@ -87,13 +87,13 @@ def init(with_auth):
         # Generate Configuration Files
         # ========================
         # Import environment and gitignore generators
-        from cli.templates import env_files, gitignore_generator
+        from cli.templates import env_file, gitignore_generator
 
         # Create .env with secure generated secrets
-        env_files.create(cwd)
+        env_file.create(cwd)
 
         # Create .env.example for documentation
-        env_files.create_sample(cwd)
+        env_file.create_sample(cwd)
 
         # Create .gitignore to protect secrets and common files
         gitignore_generator.create(cwd)
