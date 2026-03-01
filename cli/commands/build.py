@@ -11,6 +11,7 @@ from cli.templates import (
     requirements_files,
     env_file,
     gitignore_generator,
+    docker_files,
 )
 
 
@@ -83,6 +84,11 @@ def _setup_config_files(project_path, with_auth=False, db_type='sqlite'):
     gitignore_generator.create(project_path)
 
 
+def _setup_docker(project_path, db_type='sqlite'):
+    """Generate Docker configuration files"""
+    docker_files.create(project_path, db_type)
+
+
 def _print_success_message(project_path, with_auth, db_type='sqlite'):
     """Print completion message with next steps"""
     click.echo(f"\n{'=' * 70}")
@@ -152,14 +158,18 @@ def _print_success_message(project_path, with_auth, db_type='sqlite'):
         click.echo(f"  {step_offset + 1}. Visit http://localhost:5000")
 
     click.echo(f"")
+    click.echo(f"🐳 Docker Quick Start:")
+    click.echo(f"   docker-compose build     # Build Docker image")
+    click.echo(f"   docker-compose up        # Start application + services")
+    click.echo(f"   Visit: http://localhost:5000")
+
+    click.echo(f"")
     click.echo(f"🔐 Security Notes:")
     click.echo(f"   • .env is in .gitignore - never commit secrets!")
     click.echo(f"   • .env.example shows structure without secrets")
     click.echo(f"   • Share .env.example with team, not .env")
-    click.echo(f"")
-    click.echo(f"📚 Documentation:")
-    click.echo(f"   • See Readme.md for usage examples")
-    click.echo(f"   • Check .env.example for config options")
+    click.echo(f"   • FLASK_DEBUG=False by default (safe!)")
+    click.echo(f"   • Set FLASK_DEBUG=True in .env for development")
 
     click.echo(f"\n{'=' * 70}\n")
 
@@ -260,7 +270,11 @@ def build():
             click.echo("")
             _setup_auth(project_path)
 
-        # 5. Print success message
+        # 5. Setup Docker
+        click.echo("")
+        _setup_docker(project_path, db_type)
+
+        # 6. Print success message
         _print_success_message(project_path, with_auth, db_type)
 
     except Exception as e:

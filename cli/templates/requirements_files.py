@@ -1,9 +1,9 @@
-"""Requirements files generator - includes python-dotenv and optional database drivers"""
+"""Requirements files generator - includes python-dotenv, gunicorn, and optional database drivers"""
 import click
 
 
 def create(project_path, db_type='sqlite'):
-    """Create requirements.txt with Flask dependencies, python-dotenv, and db driver
+    """Create requirements.txt with Flask dependencies, python-dotenv, gunicorn, and db driver
 
     Args:
         project_path: Path to project directory
@@ -14,6 +14,7 @@ def create(project_path, db_type='sqlite'):
 flask-sqlalchemy==3.1.1
 click==8.3.1
 python-dotenv==1.0.0
+gunicorn==25.1.0
 '''
 
     # Add database driver based on selection
@@ -27,3 +28,8 @@ python-dotenv==1.0.0
         click.echo("✅ Created requirements.txt (includes psycopg2-binary==2.9.11)")
     else:
         click.echo("✅ Created requirements.txt (SQLite - no driver needed)")
+
+    click.echo("   ✓ Flask 3.1.3")
+    click.echo("   ✓ SQLAlchemy & Flask-SQLAlchemy")
+    click.echo("   ✓ python-dotenv for env variables")
+    click.echo("   ✓ gunicorn for production server")

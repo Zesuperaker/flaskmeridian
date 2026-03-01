@@ -36,7 +36,8 @@ DATABASE_URL={database_url}
 
 # Flask Environment
 FLASK_ENV=development
-FLASK_DEBUG=True
+FLASK_DEBUG=False
+FLASK_PORT=5000
 
 # Email Configuration (optional - for password reset in production)
 # Uncomment and configure when using SECURITY_RECOVERABLE=True
@@ -62,6 +63,8 @@ FLASK_DEBUG=True
         click.echo(f"   🗄️  Database: SQLite (app.db)")
 
     click.echo("   ⚠️  .env is in .gitignore - never commit secrets!")
+    click.echo("   ℹ️  FLASK_DEBUG=False by default (safe for production)")
+    click.echo("   ℹ️  Set FLASK_DEBUG=True for development with auto-reload")
 
 
 def create_sample(project_path, db_type='sqlite'):
@@ -91,8 +94,11 @@ SECURITY_PASSWORD_SALT=your-password-salt-here
 DATABASE_URL={database_url}
 
 # Flask Environment
+# Set FLASK_DEBUG=True for development with auto-reload
+# Always use FLASK_DEBUG=False in production
 FLASK_ENV=development
-FLASK_DEBUG=True
+FLASK_DEBUG=False
+FLASK_PORT=5000
 
 # Email Configuration (optional - for password reset in production)
 # MAIL_SERVER=smtp.gmail.com

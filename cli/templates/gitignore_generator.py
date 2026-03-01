@@ -1,9 +1,9 @@
-"""Gitignore generator - creates .gitignore with security best practices"""
+"""Gitignore generator - creates .gitignore with security best practices and Docker ignores"""
 import click
 
 
 def create(project_path):
-    """Create .gitignore file with standard Python and Flask ignores"""
+    """Create .gitignore file with standard Python, Flask, and Docker ignores"""
 
     gitignore_content = '''# Byte-compiled / optimized / DLL files
 __pycache__/
@@ -146,6 +146,12 @@ test_app/
 *.db
 app.db
 instance/
+
+# Docker
+.docker/
+docker-compose.local.yml
+docker-compose.prod.yml
+.env.docker
 '''
 
     gitignore_file = project_path / '.gitignore'
@@ -153,3 +159,7 @@ instance/
         f.write(gitignore_content)
 
     click.echo("✅ Created .gitignore with .env and sensitive files protected")
+    click.echo("   ✓ Secrets (.env) protected")
+    click.echo("   ✓ Virtual environments ignored")
+    click.echo("   ✓ IDE files ignored")
+    click.echo("   ✓ Docker build artifacts ignored")

@@ -1,6 +1,6 @@
-# FlaskMeridian - Streamlined Version
+# FlaskMeridian
 
-A fast and elegant CLI tool for setting up Flask applications with optional authentication.
+FlaskMeridian is the cli tool for people doing side projects and hackathons to scaffold projects that just work.
 
 ## Installation
 

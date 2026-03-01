@@ -41,7 +41,11 @@ app = create_app()
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Read debug mode from environment variable (default: False for production safety)
+    debug = os.getenv('FLASK_DEBUG', 'False').lower() in ('true', '1', 'yes')
+    port = int(os.getenv('FLASK_PORT', 5000))
+    
+    app.run(debug=debug, port=port, host='0.0.0.0')
 '''
     with open(project_path / 'app.py', 'w', encoding='utf-8') as f:
         f.write(app_content)
@@ -157,10 +161,15 @@ def make_shell_context():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Read debug mode from environment variable (default: False for production safety)
+    import os
+    debug = os.getenv('FLASK_DEBUG', 'False').lower() in ('true', '1', 'yes')
+    port = int(os.getenv('FLASK_PORT', 5000))
+    
+    app.run(debug=debug, port=port, host='0.0.0.0')
 '''
     with open(project_path / 'app.py', 'w', encoding='utf-8') as f:
         f.write(app_content)
 
     click.echo("✅ Created app.py with Flask-Security-Too and environment variables")
-    click.echo("✅ Secrets loaded from .env file (never hardcoded!)")
+    click.echo("✅ Debug mode controlled by FLASK_DEBUG environment variable")
