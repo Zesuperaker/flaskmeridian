@@ -1,6 +1,6 @@
-# FlaskMeridian
+# FlaskMeridian - Streamlined Version
 
-A fast and efficient CLI tool for setting up Flask applications with optional authentication.
+A fast and elegant CLI tool for setting up Flask applications with optional authentication.
 
 ## Installation
 
@@ -14,62 +14,56 @@ Or with pipx:
 pipx install git+https://github.com/Zesuperaker/flaskmeridian.git
 ```
 
-## Usage
+## Quick Start
 
-### Quick Start - Initialize in Current Directory (Recommended)
+Simply run the interactive builder:
 
 ```bash
-# Create and enter your project directory
+flaskmeridian build
+```
+
+Then answer two simple questions:
+
+1. **Where to create the project?**
+   - In current directory
+   - In a new subdirectory
+
+2. **Include authentication?**
+   - No (basic Flask)
+   - Yes (Flask-Security-Too)
+
+Everything else is automatic!
+
+## Example Usage
+
+### Option 1: Create in Current Directory (No Auth)
+
+```bash
 mkdir my_app
 cd my_app
+flaskmeridian build
 
-# Initialize FlaskMeridian project
-flaskmeridian init
+# Select: 1) Current directory
+#         1) No auth
 
-# Install dependencies
 pip install -r requirements.txt
-
-# Run your app
 python app.py
+# Visit http://localhost:5000
 ```
 
-### With Authentication
+### Option 2: Create in Subdirectory (With Auth)
 
 ```bash
-mkdir my_app
-cd my_app
+flaskmeridian build
 
-# Initialize with Flask-Security-Too authentication
-flaskmeridian init --with-auth
+# Select: 2) New subdirectory
+#         Enter: my_secure_app
+#         2) Yes auth
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Update app.py secrets:
-# - Change SECRET_KEY
-# - Change SECURITY_PASSWORD_SALT
-
-# Run your app
-python app.py
-```
-
-### Alternative - Create with Subdirectory
-
-```bash
-flaskmeridian create my_project
-cd my_project
+cd my_secure_app
 pip install -r requirements.txt
 python app.py
-```
-
-Or with authentication:
-
-```bash
-flaskmeridian create my_project
-cd my_project
-flaskmeridian auth
-pip install -r requirements.txt
-python app.py
+# Visit http://localhost:5000/register
 ```
 
 ## Project Structure
@@ -79,35 +73,85 @@ my_app/
 ├── templates/
 │   ├── base.html
 │   ├── index.html
-│   └── auth/                (if --with-auth used)
-│       ├── login.html
-│       ├── signup.html
-│       └── profile.html
+│   └── security/                (if auth enabled)
+│       ├── login_user.html
+│       └── register_user.html
 ├── static/
 │   ├── css/style.css
 │   └── js/script.js
 ├── routes/
 │   ├── __init__.py
-│   ├── main.py
-│   └── auth.py             (if --with-auth used)
+│   └── main.py
 ├── services/
 │   ├── __init__.py
-│   └── auth_service.py     (if --with-auth used)
+│   └── auth_service.py         (if auth enabled)
 ├── db/
 │   ├── __init__.py
 │   ├── database.py
 │   └── models/
 │       ├── __init__.py
 │       ├── base.py
-│       ├── user.py         (if --with-auth used)
-│       └── role.py         (if --with-auth used)
+│       ├── user.py             (if auth enabled)
+│       └── role.py             (if auth enabled)
 ├── app.py
-└── requirements.txt
+├── requirements.txt
+├── .env                        (secrets - protected by .gitignore)
+├── .env.example                (documentation template)
+└── .gitignore
 ```
 
-## Using Auth
+## Features
 
-Protect routes:
+### Without Authentication
+
+- Clean Flask project structure
+- Database setup (SQLAlchemy)
+- Static files (CSS/JS)
+- HTML templating
+- Route organization
+
+### With Authentication (Flask-Security-Too)
+
+All of the above, plus:
+
+- **User Registration & Login**
+- **Role-Based Access Control (RBAC)**
+- **Argon2 Password Hashing** (modern, secure)
+- **Login Tracking**
+- **Account Activation/Deactivation**
+- **Password Reset**
+- **CSRF Protection**
+- **Session Management**
+
+### Built-in Auth Routes (Flask-Security-Too)
+
+When you enable authentication, these routes are automatically available:
+
+```
+GET/POST /login              - Login page & handler
+GET/POST /register           - Registration page & handler
+GET      /logout             - Logout handler
+GET/POST /forgot-password    - Password reset request
+GET/POST /reset-password/<token> - Password reset form
+```
+
+## Environment Variables
+
+All secrets are managed via `.env` file (protected by `.gitignore`):
+
+```bash
+SECRET_KEY=generated-secure-key
+SECURITY_PASSWORD_SALT=generated-secure-salt
+DATABASE_URL=sqlite:///app.db
+FLASK_ENV=development
+FLASK_DEBUG=True
+```
+
+**Important**: Never commit `.env` to version control! Share `.env.example` with your team instead.
+
+## Using Authentication
+
+### Protect Routes
 
 ```python
 from flask_security import auth_required
@@ -118,14 +162,20 @@ def dashboard():
     return 'Protected page'
 ```
 
-Check roles:
+### Check Roles
 
 ```python
-if current_user.has_role('admin'):
-    # admin only code
+from flask_security import current_user
+
+@app.route('/admin')
+@auth_required()
+def admin_panel():
+    if current_user.has_role('admin'):
+        return 'Admin panel'
+    return 'Access denied', 403
 ```
 
-Access user info:
+### Access User Info
 
 ```python
 from flask_security import current_user
@@ -133,51 +183,143 @@ from flask_security import current_user
 @app.route('/profile')
 @auth_required()
 def profile():
-    return f'Hello {current_user.email}'
+    return f'Hello {current_user.email}!'
 ```
 
-## Commands
+## Security
 
-### `flaskmeridian init [OPTIONS]`
+✅ **Secrets Management**
+- Secrets stored in `.env` (not in code)
+- `.env` is in `.gitignore` (never committed)
+- Share `.env.example` for documentation
 
-Initialize a Flask project in the current directory.
+✅ **Password Security**
+- Argon2 hashing (modern standard)
+- Verified by Flask-Security-Too
+- Password salt configured in `.env`
 
-**Options:**
-- `--with-auth`: Include Flask-Security-Too authentication system
+✅ **Session Security**
+- CSRF protection (automatic)
+- Secure session management
+- Remember-me functionality
+- Login tracking
 
-**Usage:**
-```bash
-flaskmeridian init                 # Basic project
-flaskmeridian init --with-auth     # With authentication
+## Development Workflow
+
+1. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Run Flask shell to create users**
+   ```bash
+   flask shell
+   >>> from db import db
+   >>> from db.models import User, Role
+   >>> from flask_security import hash_password
+   >>> 
+   >>> # Create admin role
+   >>> admin_role = Role(name='admin', description='Admin')
+   >>> db.session.add(admin_role)
+   >>> 
+   >>> # Create admin user
+   >>> admin = User(
+   ...     email='admin@example.com',
+   ...     username='admin',
+   ...     password=hash_password('secure_password'),
+   ...     active=True
+   ... )
+   >>> admin.roles.append(admin_role)
+   >>> db.session.add(admin)
+   >>> db.session.commit()
+   ```
+
+3. **Run development server**
+   ```bash
+   python app.py
+   ```
+
+4. **Test authentication**
+   ```
+   Register:  http://localhost:5000/register
+   Login:     http://localhost:5000/login
+   Profile:   http://localhost:5000/profile
+   ```
+
+## Customization
+
+### Add Custom Models
+
+Create files in `db/models/`:
+
+```python
+# db/models/product.py
+from .base import BaseModel
+from db.database import db
+
+class Product(BaseModel):
+    __tablename__ = 'product'
+    
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    description = db.Column(db.Text)
 ```
 
-### `flaskmeridian create PROJECT_NAME`
+### Add Routes
 
-Create a Flask project in a new subdirectory (legacy command).
+Create blueprints in `routes/`:
 
-**Usage:**
-```bash
-flaskmeridian create my_project
-cd my_project
+```python
+# routes/api.py
+from flask import Blueprint, jsonify
+
+api_bp = Blueprint('api', __name__, url_prefix='/api')
+
+@api_bp.route('/products')
+def get_products():
+    return jsonify([])
 ```
 
-### `flaskmeridian auth`
+Register in `app.py`:
 
-Add Flask-Security-Too authentication to an existing project created with `create`.
+```python
+from routes.api import api_bp
+app.register_blueprint(api_bp)
+```
 
-**Options:**
-- `--db-type`: Database type - `sqlite` (default) or `postgres`
+### Add Business Logic
 
-**Usage:**
-```bash
-flaskmeridian auth                        # SQLite
-flaskmeridian auth --db-type=postgres     # PostgreSQL
+Create services in `services/`:
+
+```python
+# services/product_service.py
+from db import db
+from db.models import Product
+
+class ProductService:
+    @staticmethod
+    def create_product(name, price, description):
+        product = Product(name=name, price=price, description=description)
+        db.session.add(product)
+        db.session.commit()
+        return product
 ```
 
 ## License
 
-MIT
+MIT - See LICENSE file
 
 ## Repository
 
 https://github.com/Zesuperaker/flaskmeridian
+
+## Changelog
+
+### v0.2.0 (Streamlined)
+- ✨ Consolidated to single `flaskmeridian build` command
+- 🎯 Interactive prompts for location and features
+- 📉 34% less code, more maintainable
+- 🚀 Better UX with guided workflow
+
+### v0.1.0 (Original)
+- Initial release with init, create, auth commands

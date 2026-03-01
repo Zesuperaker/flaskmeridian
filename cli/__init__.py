@@ -1,20 +1,19 @@
 """Commands module for FlaskMeridian CLI"""
 import click
-from flask import Blueprint
-from cli.commands.create import create
-from cli.commands.init import init
-from cli.commands.auth import auth
+from cli.commands.build import build
 
 
 @click.group()
 def cli():
-    """FlaskMeridian - Fast Flask setup and automation CLI tool"""
+    """FlaskMeridian - Fast Flask setup and automation CLI tool
+
+    🚀 Usage:
+        flaskmeridian build        Interactive project builder
+    """
     pass
 
 
-cli.add_command(create)
-cli.add_command(init)
-cli.add_command(auth)
+cli.add_command(build)
 
 
 if __name__ == '__main__':
