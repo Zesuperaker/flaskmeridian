@@ -1,4 +1,4 @@
-"""Auth command for generating Flask-Security-Too authentication system"""
+"""Auth command for generating Flask-Security-Too authentication system with environment variables"""
 import click
 from pathlib import Path
 
@@ -12,13 +12,14 @@ from pathlib import Path
 )
 def auth(db_type):
     """
-    ⚡ Set up Flask-Security-Too authentication system
+    ⚡ Set up Flask-Security-Too authentication system with environment variables
 
     Creates:
     - User and Role database models with RBAC
-    - Flask-Security-Too configuration in app.py
     - Auth HTML templates (login, signup, profile)
     - Built-in authentication routes (no custom code needed!)
+    - .env file with secure secrets
+    - .gitignore to protect secrets
 
     Built-in Routes (Flask-Security):
     - /login           - Login form & handler
@@ -40,13 +41,15 @@ def auth(db_type):
     try:
         click.echo("🔧 Setting up Flask-Security-Too authentication system...\n")
 
-        # Import auth setup modules (no auth_routes - Flask-Security provides everything)
+        # Import auth setup modules
         from cli.templates.auth import (
             auth_models,
             auth_templates,
-            auth_config,
             auth_requirements,
         )
+
+        # Import environment and gitignore generators
+        from cli.templates import env_files, gitignore_generator
 
         # 1. Create User and Role models
         auth_models.update_models(Path('db'))
@@ -54,11 +57,26 @@ def auth(db_type):
         # 2. Create auth HTML templates
         auth_templates.create(Path('templates'))
 
-        # 3. Update app.py with Flask-Security-Too configuration
-        auth_config.update_app(Path('app.py'), db_type)
-
-        # 4. Update requirements.txt with Flask-Security-Too and argon2
+        # 3. Update requirements.txt with Flask-Security-Too, argon2, and python-dotenv
         auth_requirements.update(Path('requirements.txt'))
+
+        # 4. Generate .env if it doesn't exist (preserve existing if present)
+        env_file = Path('.env')
+        if not env_file.exists():
+            env_files.create(Path.cwd())
+        else:
+            click.echo("ℹ️  .env already exists (preserving existing secrets)")
+
+        # 5. Generate .env.example if it doesn't exist
+        env_example = Path('.env.example')
+        if not env_example.exists():
+            env_files.create_sample(Path.cwd())
+
+        # 6. Generate or update .gitignore
+        if not Path('.gitignore').exists():
+            gitignore_generator.create(Path.cwd())
+        else:
+            click.echo("ℹ️  .gitignore already exists")
 
         click.echo(f"\n{'=' * 60}")
         click.echo(f"✨ Flask-Security-Too Authentication Successfully Added!")
@@ -66,9 +84,12 @@ def auth(db_type):
 
         click.echo("📋 What was created:")
         click.echo("  ✅ User and Role models (db/models/user.py, db/models/role.py)")
-        click.echo("  ✅ Auth templates (templates/auth/login.html, signup.html, profile.html)")
+        click.echo("  ✅ Auth templates (templates/security/login_user.html, register_user.html)")
         click.echo("  ✅ Flask-Security configuration in app.py")
         click.echo("  ✅ Dependencies in requirements.txt")
+        click.echo("  ✅ .env with secure generated secrets")
+        click.echo("  ✅ .env.example as documentation template")
+        click.echo("  ✅ .gitignore protecting secrets")
 
         click.echo(f"\n🔐 Built-in Authentication Routes (provided by Flask-Security):")
         click.echo("  • GET/POST /login            - User login page & handler")
@@ -86,28 +107,31 @@ def auth(db_type):
         click.echo("  ✓ Login tracking & rate limiting")
         click.echo("  ✓ Account activation/deactivation")
         click.echo("  ✓ Password reset functionality")
+        click.echo("  ✓ Environment-based secret management")
 
         click.echo(f"\n🔌 Database: {db_type.upper()}")
 
         if db_type == 'postgres':
             click.echo("\n⚠️  PostgreSQL Configuration Required:")
-            click.echo("   Update DATABASE_URI in app.py:")
-            click.echo("   app.config['SQLALCHEMY_DATABASE_URI'] = \\")
-            click.echo("       'postgresql://user:password@localhost/dbname'")
+            click.echo("   Update DATABASE_URL in .env:")
+            click.echo("   DATABASE_URL=postgresql://user:password@localhost/dbname")
 
         click.echo(f"\n📦 Next Steps:")
         click.echo(f"   1. Install dependencies:")
         click.echo(f"      pip install -r requirements.txt")
 
-        click.echo(f"\n   2. Update secrets in app.py (CRITICAL for production):")
-        click.echo(f"      import secrets")
-        click.echo(f"      secrets.token_urlsafe(32)  # For SECRET_KEY")
-        click.echo(f"      secrets.token_urlsafe(32)  # For SECURITY_PASSWORD_SALT")
+        click.echo(f"\n   2. Verify .env was created:")
+        click.echo(f"      cat .env")
+
+        click.echo(f"\n   3. Check that .env is protected:")
+        click.echo(f"      grep '.env' .gitignore")
 
         if db_type == 'postgres':
-            click.echo(f"\n   3. Update PostgreSQL connection string in app.py")
+            click.echo(f"\n   4. Update DATABASE_URL in .env with PostgreSQL connection")
+            click.echo(f"\n   5. Delete old database and restart:")
+        else:
+            click.echo(f"\n   4. Delete old database and restart:")
 
-        click.echo(f"\n   4. Delete old database and restart:")
         click.echo(f"      rm app.db")
         click.echo(f"      python app.py")
 

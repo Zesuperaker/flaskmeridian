@@ -1,4 +1,4 @@
-"""Create command for generating new Flask projects"""
+"""Create command for generating new Flask projects with environment variables"""
 import click
 from pathlib import Path
 from cli.templates import (
@@ -15,7 +15,19 @@ from cli.templates import (
 @click.command()
 @click.argument('project_name')
 def create(project_name):
-    """Create a new Flask project with directory structure and boilerplate"""
+    """Create a new Flask project with directory structure and boilerplate
+
+    This creates a new project directory with all necessary files and structure.
+
+    Environment variables (secrets) are stored in .env file which is protected
+    in .gitignore - never commit secrets to version control!
+
+    Usage:
+        flaskmeridian create my_project
+        cd my_project
+        pip install -r requirements.txt
+        python app.py
+    """
     project_path = Path(project_name)
 
     if project_path.exists():
@@ -57,6 +69,21 @@ def create(project_name):
         # Create main app file
         app_py.create(project_path, project_name)
 
+        # ========================
+        # Generate Configuration Files
+        # ========================
+        # Import environment and gitignore generators
+        from cli.templates import env_files, gitignore_generator
+
+        # Create .env with secure generated secrets
+        env_files.create(project_path)
+
+        # Create .env.example for documentation
+        env_files.create_sample(project_path)
+
+        # Create .gitignore to protect secrets and common files
+        gitignore_generator.create(project_path)
+
         click.echo(f"\n✨ FlaskMeridian project '{project_name}' created successfully!")
         click.echo(f"📁 Project structure:\n")
         click.echo(f"  {project_name}/")
@@ -76,8 +103,11 @@ def create(project_name):
         click.echo(f"  ├── db/")
         click.echo(f"  │   ├── __init__.py")
         click.echo(f"  │   ├── database.py")
-        click.echo(f"  │   └── models.py")
+        click.echo(f"  │   └── models/")
         click.echo(f"  ├── requirements.txt")
+        click.echo(f"  ├── .env (secrets - protected by .gitignore)")
+        click.echo(f"  ├── .env.example (documentation template)")
+        click.echo(f"  ├── .gitignore (protects secrets!)")
         click.echo(f"  └── app.py")
         click.echo(f"\n🚀 Get started:")
         click.echo(f"  cd {project_name}")

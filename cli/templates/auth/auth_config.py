@@ -1,6 +1,5 @@
 """Auth config generator - updates app.py with Flask-Security-Too configuration"""
 import click
-from pathlib import Path
 
 
 def update_app(app_path, db_type):

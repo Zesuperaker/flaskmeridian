@@ -1,14 +1,19 @@
-"""Main app.py generator - with Flask-Security-Too configuration"""
+"""Main app.py generator - with Flask-Security-Too and environment variable configuration"""
 import click
 
 
 def create(project_path, project_name):
-    """Create main Flask app file without authentication"""
+    """Create main Flask app file without authentication, using environment variables"""
 
     app_content = '''"""FlaskMeridian Application"""
+import os
+from dotenv import load_dotenv
 from flask import Flask
 from db.database import db, init_db
 from routes import register_blueprints
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 def create_app(config=None):
@@ -16,7 +21,7 @@ def create_app(config=None):
     app = Flask(__name__)
 
     # Configuration
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///app.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     if config:
@@ -41,29 +46,29 @@ if __name__ == '__main__':
     with open(project_path / 'app.py', 'w', encoding='utf-8') as f:
         f.write(app_content)
 
-    click.echo("✅ Created app.py")
+    click.echo("✅ Created app.py with environment variable support")
 
 
 def create_with_auth(project_path, db_type='sqlite'):
-    """Create app.py with Flask-Security-Too configuration
+    """Create app.py with Flask-Security-Too configuration using environment variables
 
     Uses Flask-Security's built-in routes instead of custom authentication routes:
     - /login, /register, /logout, /forgot-password, /reset-password/<token>
 
-    Email sending is disabled by default for development convenience.
+    Secrets are loaded from .env file for security.
     """
 
-    if db_type == 'postgres':
-        db_uri = "'postgresql://user:password@localhost/flaskmeridian_db'"
-    else:
-        db_uri = "'sqlite:///app.db'"
-
-    app_content = f'''"""FlaskMeridian Application with Flask-Security-Too Authentication"""
+    app_content = '''"""FlaskMeridian Application with Flask-Security-Too Authentication"""
+import os
+from dotenv import load_dotenv
 from flask import Flask
 from flask_security import Security, SQLAlchemyUserDatastore
 from db.database import db, init_db
 from db.models import User, Role
 from routes import register_blueprints
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 def create_app(config=None):
@@ -71,12 +76,12 @@ def create_app(config=None):
     app = Flask(__name__)
 
     # Configuration
-    app.config['SQLALCHEMY_DATABASE_URI'] = {db_uri}
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///app.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Flask-Security configuration
-    app.config['SECRET_KEY'] = 'change-me-in-production'  # Use: python -c "import secrets; print(secrets.token_urlsafe(32))"
-    app.config['SECURITY_PASSWORD_SALT'] = 'change-me-in-production'  # Use: python -c "import secrets; print(secrets.token_urlsafe(32))"
+    # Flask-Security configuration - loaded from environment
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+    app.config['SECURITY_PASSWORD_SALT'] = os.getenv('SECURITY_PASSWORD_SALT', 'dev-salt-change-in-production')
     
     # Password hashing configuration - use argon2
     app.config['SECURITY_PASSWORD_SCHEMES'] = ['argon2']
@@ -143,12 +148,12 @@ app = create_app()
 def make_shell_context():
     """Make database models available in flask shell"""
     from flask_security import hash_password
-    return {{
+    return {
         'db': db,
         'User': User,
         'Role': Role,
         'hash_password': hash_password,
-    }}
+    }
 
 
 if __name__ == '__main__':
@@ -157,9 +162,5 @@ if __name__ == '__main__':
     with open(project_path / 'app.py', 'w', encoding='utf-8') as f:
         f.write(app_content)
 
-    click.echo("✅ Created app.py with Flask-Security-Too configuration")
-    click.echo("✅ Email sending DISABLED for development (no Flask-Mail needed!)")
-    click.echo("✅ Use SECURITY_SEND_*_EMAIL = True in production with Flask-Mail configured")
-
-    if db_type == 'postgres':
-        click.echo("⚠️  Remember to update SQLALCHEMY_DATABASE_URI in app.py with your PostgreSQL credentials")
+    click.echo("✅ Created app.py with Flask-Security-Too and environment variables")
+    click.echo("✅ Secrets loaded from .env file (never hardcoded!)")

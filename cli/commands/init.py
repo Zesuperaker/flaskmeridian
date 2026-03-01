@@ -1,4 +1,4 @@
-"""Init command for generating new Flask projects in current directory"""
+"""Init command for generating new Flask projects in current directory with environment variables"""
 import click
 from pathlib import Path
 from cli.templates import (
@@ -23,6 +23,9 @@ def init(with_auth):
 
     This sets up a complete Flask project structure with all necessary
     files and configuration in your current directory.
+
+    Environment variables (secrets) are stored in .env file which is
+    protected in .gitignore - never commit secrets to version control!
 
     Usage:
         # Create a new project directory first
@@ -80,6 +83,21 @@ def init(with_auth):
         else:
             app_py.create(cwd, cwd.name)
 
+        # ========================
+        # Generate Configuration Files
+        # ========================
+        # Import environment and gitignore generators
+        from cli.templates import env_files, gitignore_generator
+
+        # Create .env with secure generated secrets
+        env_files.create(cwd)
+
+        # Create .env.example for documentation
+        env_files.create_sample(cwd)
+
+        # Create .gitignore to protect secrets and common files
+        gitignore_generator.create(cwd)
+
         click.echo(f"\n{'=' * 60}")
         click.echo(f"✨ FlaskMeridian project initialized successfully!")
         click.echo(f"{'=' * 60}\n")
@@ -102,6 +120,9 @@ def init(with_auth):
         click.echo(f"  ├── database.py")
         click.echo(f"  └── models/")
         click.echo(f"  ├── requirements.txt")
+        click.echo(f"  ├── .env (secrets - protected by .gitignore)")
+        click.echo(f"  ├── .env.example (documentation template)")
+        click.echo(f"  ├── .gitignore (protects secrets!)")
         click.echo(f"  └── app.py")
 
         if with_auth:
@@ -111,7 +132,6 @@ def init(with_auth):
             from cli.templates.auth import (
                 auth_models,
                 auth_templates,
-                auth_config,
                 auth_requirements,
             )
 
@@ -121,7 +141,7 @@ def init(with_auth):
             # 2. Create auth HTML templates
             auth_templates.create(cwd / 'templates')
 
-            # 3. Update requirements.txt with Flask-Security-Too and argon2
+            # 3. Update requirements.txt with Flask-Security-Too, argon2, and python-dotenv
             auth_requirements.update(cwd / 'requirements.txt')
 
             click.echo(f"\n✨ Flask-Security-Too authentication configured!")
@@ -144,10 +164,10 @@ def init(with_auth):
         click.echo(f"  1. Install dependencies:")
         click.echo(f"     pip install -r requirements.txt")
 
+        click.echo(f"\n  2. Verify .env was created with secrets:")
+        click.echo(f"     cat .env")
+
         if with_auth:
-            click.echo(f"\n  2. Update secrets in app.py (IMPORTANT):")
-            click.echo(f"     - Change SECRET_KEY")
-            click.echo(f"     - Change SECURITY_PASSWORD_SALT")
             click.echo(f"\n  3. Run your app:")
             click.echo(f"     python app.py")
             click.echo(f"\n  4. Visit in browser:")
@@ -156,9 +176,15 @@ def init(with_auth):
             click.echo(f"     • Login:    http://localhost:5000/login")
             click.echo(f"     • Profile:  http://localhost:5000/profile")
         else:
-            click.echo(f"\n  2. Run your app:")
+            click.echo(f"\n  3. Run your app:")
             click.echo(f"     python app.py")
-            click.echo(f"\n  3. Visit http://localhost:5000")
+            click.echo(f"\n  4. Visit http://localhost:5000")
+
+        click.echo(f"\n🔐 Security Notes:")
+        click.echo(f"   • .env is in .gitignore - never commit secrets!")
+        click.echo(f"   • .env.example shows structure without secrets")
+        click.echo(f"   • Share .env.example with team, not .env")
+        click.echo(f"   • Copy .env.example → .env on new machines")
 
         click.echo(f"\n{'=' * 60}\n")
 
