@@ -73,13 +73,13 @@ def create(project_name):
         # Generate Configuration Files
         # ========================
         # Import environment and gitignore generators
-        from cli.templates import env_files, gitignore_generator
+        from cli.templates import env_file, gitignore_generator
 
         # Create .env with secure generated secrets
-        env_files.create(project_path)
+        env_file.create(project_path)
 
         # Create .env.example for documentation
-        env_files.create_sample(project_path)
+        env_file.create_sample(project_path)
 
         # Create .gitignore to protect secrets and common files
         gitignore_generator.create(project_path)
