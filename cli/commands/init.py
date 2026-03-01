@@ -9,6 +9,8 @@ from cli.templates import (
     services_files,
     app_py,
     requirements_files,
+    env_file,
+    gitignore_generator,
 )
 
 
@@ -86,8 +88,6 @@ def init(with_auth):
         # ========================
         # Generate Configuration Files
         # ========================
-        # Import environment and gitignore generators
-        from cli.templates import env_file, gitignore_generator
 
         # Create .env with secure generated secrets
         env_file.create(cwd)

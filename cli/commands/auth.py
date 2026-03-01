@@ -61,16 +61,20 @@ def auth(db_type):
         auth_requirements.update(Path('requirements.txt'))
 
         # 4. Generate .env if it doesn't exist (preserve existing if present)
-        env_file.create(Path.cwd())
+        env_path = Path('.env')  # ← renamed to env_path
+        if not env_path.exists():
+            env_file.create(Path.cwd())  # ← now calls the module correctly
+        else:
+            click.echo("ℹ️  .env already exists (preserving existing secrets)")
 
         # 5. Generate .env.example if it doesn't exist
-        env_file.create_sample(Path.cwd())
+        env_example_path = Path('.env.example')  # ← renamed too
+        if not env_example_path.exists():
+            env_file.create_sample(Path.cwd())  # ← module call restored
 
         # 6. Generate or update .gitignore
         if not Path('.gitignore').exists():
             gitignore_generator.create(Path.cwd())
-        else:
-            click.echo("ℹ️  .gitignore already exists")
 
         click.echo(f"\n{'=' * 60}")
         click.echo(f"✨ Flask-Security-Too Authentication Successfully Added!")
